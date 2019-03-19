@@ -1,0 +1,17 @@
+<span class="item new_group" data-bind="visible: groups().length > 0, dropdown: {control: false}, css: {'disabled': !hasCheckedEntities()}, customTooltip: '%MODULENAME%/ACTION_ADD_TO_GROUP'">
+	<span class="icon"></span>
+	<span class="text" data-bind="i18n: {'key': '%MODULENAME%/ACTION_ADD_TO_GROUP'}"></span>
+	<span class="icon arrow"></span>
+	<span class="dropdown">
+		<span class="dropdown_helper">
+			<span class="dropdown_arrow"><span></span></span>
+			<span class="dropdown_content" data-bind="customScrollbar: {x: false}">
+				<span class="scroll-inner">
+					<!-- ko foreach: groups() -->
+						<span class="item" data-bind="text: Name, click: function () { $parent.addToGroup(Id); }"></span>
+					<!-- /ko -->
+				</span>
+			</span>
+		</span>
+	</span>
+</span>

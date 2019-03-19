@@ -1,0 +1,20 @@
+<div class="row">
+	<span class="label" data-bind="i18n: {'key': 'COREWEBCLIENT/LABEL_NAME'}"></span>
+	<span class="value">
+		<input class="input" type="text" data-bind="value: name, valueUpdate: 'afterkeydown', 
+			onEnter: function () { saveEntity($parents, $root); }" style="width: 200px;" />
+	</span>
+</div>
+<div class="row" data-bind="style: { 'display': users().length > 0 ? 'inline-block' : 'none' }">
+	<div data-bind="i18n: {'key': '%MODULENAME%/LABEL_GROUP_USERS'}"></div>
+	<div data-bind="foreach: users" style="border-bottom: solid 1px #ddd; margin: 6px 0;">
+		<div style="background: white; padding: 6px; border: solid 1px #ddd; border-bottom: 0;">
+			<input style="vertical-align: middle;" type="checkbox" data-bind="checked: checkedUser, attr: { 'id': 'checkedUser' + Id }" />
+			<label style="vertical-align: middle;" data-bind="text: PublicId, attr: { 'for': 'checkedUser' + Id }"></label>
+		</div>
+	</div>
+	<div class="link" data-bind="click: removeSelectedFromGroup, i18n: {'key': '%MODULENAME%/ACTION_REMOVE_FROM_GROUP'}"></div>
+</div>
+<div class="row" data-bind="visible: id() !== 0 && !usersLoading() && users().length === 0">
+	<div data-bind="click: onUsersInfoClick, i18n: {'key': '%MODULENAME%/LABEL_NO_USERS_IN_GROUP'}"></div>
+</div>

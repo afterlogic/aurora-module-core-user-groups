@@ -1,0 +1,31 @@
+<div class="middle_bar">
+	<div class="panel_top">
+		<h2 class="settings_heading" data-bind="i18n: {'key': '%MODULENAME%/HEADING_SETTINGS_TAB_USERGROUPS'}"></h2>
+	</div>
+	<div class="panel_center">
+		<div class="fields">
+			<div class="fieldset">
+				<!-- ko foreach: groups -->
+				<div class="row"> 
+					<span class="value">
+						<label class="custom_checkbox" data-bind="css: {'checked': checkedGroup}">
+							<span class="icon"></span>
+							<input type="checkbox" data-bind="checked: checkedGroup, attr: {'id': 'checkedGroup_' + iId}" />
+						</label>
+						<label data-bind="text: sName, attr: {'for': 'checkedGroup_' + iId}"></label>
+					</span>
+				</div>
+				<!-- /ko -->
+			</div>
+
+			<div class="buttons">
+				<span class="button" data-bind="click: saveGroupsOfUser, visible: !isSaving()">
+					<span data-bind="i18n: {'key': 'COREWEBCLIENT/ACTION_SAVE'}"></span>
+				</span>
+				<span class="button" data-bind="visible: isSaving()">
+					<span data-bind="i18n: {'key': 'COREWEBCLIENT/ACTION_SAVE_IN_PROGRESS'}"></span>
+				</span>
+			</div>
+		</div>
+	</div>
+</div>
