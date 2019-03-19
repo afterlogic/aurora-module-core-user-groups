@@ -5,7 +5,7 @@
  * For full statements of the licenses see LICENSE-AFTERLOGIC and LICENSE-AGPL3 files.
  */
 
-namespace Aurora\Modules\UserGroups\Classes;
+namespace Aurora\Modules\CoreUserGroups\Classes;
 
 /**
  * @license https://www.gnu.org/licenses/agpl-3.0.html AGPL-3.0
@@ -16,7 +16,7 @@ namespace Aurora\Modules\UserGroups\Classes;
  * @property string $Name
  *
  * @ignore
- * @package UserGroups
+ * @package CoreUserGroups
  * @subpackage Classes
  */
 class Group extends \Aurora\System\EAV\Entity

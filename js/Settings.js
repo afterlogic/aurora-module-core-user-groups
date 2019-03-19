@@ -1,7 +1,7 @@
 'use strict';
 
 module.exports = {
-	ServerModuleName: 'UserGroups',
+	ServerModuleName: 'CoreUserGroups',
 	HashModuleName: 'user-groups',
 
 	/**

@@ -4,13 +4,13 @@
  * For full statements of the license see LICENSE file.
  */
 
-namespace Aurora\Modules\UserGroups\Managers\Groups;
+namespace Aurora\Modules\CoreUserGroups\Managers\Groups;
 
 /**
  * @license https://afterlogic.com/products/common-licensing AfterLogic Software License
  * @copyright Copyright (c) 2019, Afterlogic Corp.
  *
- * @package UserGroups
+ * @package CoreUserGroups
  * @subpackage Managers
  */
 class Manager extends \Aurora\System\Managers\AbstractManager
@@ -47,11 +47,11 @@ class Manager extends \Aurora\System\Managers\AbstractManager
 				]
 			];
 			
-			$aGroupUser = $this->oEavManager->getEntities(\Aurora\Modules\UserGroups\Classes\GroupUser::class, array(), 0, 0, $aFilters);
+			$aGroupUser = $this->oEavManager->getEntities(\Aurora\Modules\CoreUserGroups\Classes\GroupUser::class, array(), 0, 0, $aFilters);
 
 			if (empty($aGroupUser))
 			{
-				$oUserGroup = new \Aurora\Modules\UserGroups\Classes\GroupUser(\Aurora\Modules\UserGroups\Module::GetName());
+				$oUserGroup = new \Aurora\Modules\CoreUserGroups\Classes\GroupUser(\Aurora\Modules\CoreUserGroups\Module::GetName());
 				$oUserGroup->GroupId = $iGroupId;
 				$oUserGroup->UserId = $iUserId;
 				$this->oEavManager->saveEntity($oUserGroup);
@@ -69,7 +69,7 @@ class Manager extends \Aurora\System\Managers\AbstractManager
 	 */
 	public function createGroup($iTenantId, $sName)
 	{
-		$oGroup = new \Aurora\Modules\UserGroups\Classes\Group(\Aurora\Modules\UserGroups\Module::GetName());
+		$oGroup = new \Aurora\Modules\CoreUserGroups\Classes\Group(\Aurora\Modules\CoreUserGroups\Module::GetName());
 		$oGroup->TenantId = $iTenantId;
 		$oGroup->Name = $sName;
 		
@@ -103,11 +103,11 @@ class Manager extends \Aurora\System\Managers\AbstractManager
 	/**
 	 * Obtains specified group.
 	 * @param int $iGroupId Group identifier.
-	 * @return \Aurora\Modules\UserGroups\Classes\Group|boolean
+	 * @return \Aurora\Modules\CoreUserGroups\Classes\Group|boolean
 	 */
 	public function getGroup($iGroupId)
 	{
-		return $this->oEavManager->getEntity($iGroupId, \Aurora\Modules\UserGroups\Classes\Group::class);
+		return $this->oEavManager->getEntity($iGroupId, \Aurora\Modules\CoreUserGroups\Classes\Group::class);
 	}
 	
 	/**
@@ -118,7 +118,7 @@ class Manager extends \Aurora\System\Managers\AbstractManager
 	public function getGroupUserObjects($iGroupId)
 	{
 		$aFilters = ['GroupId' => [$iGroupId, '=']];
-		return $this->oEavManager->getEntities( \Aurora\Modules\UserGroups\Classes\GroupUser::class, array(), 0, 0, $aFilters);
+		return $this->oEavManager->getEntities( \Aurora\Modules\CoreUserGroups\Classes\GroupUser::class, array(), 0, 0, $aFilters);
 	}
 	
 	/**
@@ -135,7 +135,7 @@ class Manager extends \Aurora\System\Managers\AbstractManager
 		$iOrderType = \Aurora\System\Enums\SortOrder::ASC;
 		
 		return $this->oEavManager->getEntities(
-			\Aurora\Modules\UserGroups\Classes\Group::class,
+			\Aurora\Modules\CoreUserGroups\Classes\Group::class,
 			array(),
 			$iOffset,
 			$iLimit,
@@ -153,7 +153,7 @@ class Manager extends \Aurora\System\Managers\AbstractManager
 	public function getGroupsOfUser($iUserId)
 	{
 		$aFilters = ['UserId' => [$iUserId, '=']];
-		return $this->oEavManager->getEntities( \Aurora\Modules\UserGroups\Classes\GroupUser::class, array(), 0, 0, $aFilters);
+		return $this->oEavManager->getEntities( \Aurora\Modules\CoreUserGroups\Classes\GroupUser::class, array(), 0, 0, $aFilters);
 	}
 	
 	/**
@@ -167,7 +167,7 @@ class Manager extends \Aurora\System\Managers\AbstractManager
 		$aFilters = [
 			'GroupId' => [$iGroupId, '=']
 		];
-		$aGroupUser = $this->oEavManager->getEntities(\Aurora\Modules\UserGroups\Classes\GroupUser::class, array(), 0, 0, $aFilters);
+		$aGroupUser = $this->oEavManager->getEntities(\Aurora\Modules\CoreUserGroups\Classes\GroupUser::class, array(), 0, 0, $aFilters);
 		
 		$aGroupUserToDelete = [];
 		foreach ($aGroupUser as $oGroupUser)
@@ -195,7 +195,7 @@ class Manager extends \Aurora\System\Managers\AbstractManager
 		$aFilters = [
 			'UserId' => [$iUserId, '=']
 		];
-		$aGroupUser = $this->oEavManager->getEntities(\Aurora\Modules\UserGroups\Classes\GroupUser::class, array(), 0, 0, $aFilters);
+		$aGroupUser = $this->oEavManager->getEntities(\Aurora\Modules\CoreUserGroups\Classes\GroupUser::class, array(), 0, 0, $aFilters);
 		
 		$aGroupUserToDelete = [];
 		foreach ($aGroupUser as $oGroupUser)
@@ -215,7 +215,7 @@ class Manager extends \Aurora\System\Managers\AbstractManager
 
 		foreach ($aGroupsIds as $iGroupId)
 		{
-			$oUserGroup = new \Aurora\Modules\UserGroups\Classes\GroupUser(\Aurora\Modules\UserGroups\Module::GetName());
+			$oUserGroup = new \Aurora\Modules\CoreUserGroups\Classes\GroupUser(\Aurora\Modules\CoreUserGroups\Module::GetName());
 			$oUserGroup->GroupId = $iGroupId;
 			$oUserGroup->UserId = $iUserId;
 			$this->oEavManager->saveEntity($oUserGroup);
