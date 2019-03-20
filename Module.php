@@ -24,13 +24,6 @@ class Module extends \Aurora\System\Module\AbstractModule
 	public function init()
 	{
 		$this->subscribeEvent('Core::DeleteTenant::after', array($this, 'onAfterDeleteTenant'));
-		
-		\Aurora\Modules\Core\Classes\User::extend(
-			self::GetName(),
-			[
-				'GroupId' => array('int', 0)
-			]
-		);
 	}
 	
 	public function getGroupsManager()
@@ -51,6 +44,8 @@ class Module extends \Aurora\System\Module\AbstractModule
 	 */
 	public function AddToGroup($GroupId = 0, $UsersIds = [])
 	{
+		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::TenantAdmin);
+		
 		if ($GroupId === 0 || empty($UsersIds))
 		{
 			throw new \Aurora\System\Exceptions\ApiException(\Aurora\System\Notifications::InvalidInputParameter);
@@ -68,7 +63,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 	 */
 	public function CreateGroup($TenantId = 0, $Name = '')
 	{
-		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::SuperAdmin);
+		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::TenantAdmin);
 		
 		if ($TenantId === 0 || $Name === '')
 		{
@@ -85,7 +80,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 	 */
 	public function DeleteGroups($IdList)
 	{
-		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::SuperAdmin);
+		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::TenantAdmin);
 		
 		$mResult = true;
 		foreach ($IdList as $iGroupId)
@@ -103,7 +98,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 	 */
 	public function GetGroup($Id)
 	{
-		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::SuperAdmin);
+		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::TenantAdmin);
 		
 		return $this->getGroupsManager()->getGroup($Id);
 	}
@@ -115,7 +110,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 	 */
 	public function GetGroupUsers($GroupId = 0)
 	{
-		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::SuperAdmin);
+		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::TenantAdmin);
 		
 		if ($GroupId === 0)
 		{
@@ -147,7 +142,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 	 */
 	public function GetGroups($TenantId = 0)
 	{
-		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::SuperAdmin);
+		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::TenantAdmin);
 		
 		if ($TenantId === 0)
 		{
@@ -173,7 +168,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 	 */
 	public function GetGroupsOfUser($UserId = 0)
 	{
-		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::SuperAdmin);
+		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::TenantAdmin);
 		
 		if ($UserId === 0)
 		{
@@ -191,6 +186,8 @@ class Module extends \Aurora\System\Module\AbstractModule
 	 */
 	public function RemoveUsersFromGroup($GroupId, $UsersIds)
 	{
+		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::TenantAdmin);
+		
 		if ($GroupId === 0 && empty($UsersIds))
 		{
 			throw new \Aurora\System\Exceptions\ApiException(\Aurora\System\Notifications::InvalidInputParameter);
@@ -207,6 +204,8 @@ class Module extends \Aurora\System\Module\AbstractModule
 	 */
 	public function SaveGroupsOfUser($UserId, $GroupsIds)
 	{
+		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::TenantAdmin);
+		
 		if ($UserId === 0)
 		{
 			throw new \Aurora\System\Exceptions\ApiException(\Aurora\System\Notifications::InvalidInputParameter);
@@ -223,7 +222,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 	 */
 	public function UpdateGroup($Data = [])
 	{
-		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::SuperAdmin);
+		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::TenantAdmin);
 		
 		$iGroupId = $Data['Id'];
 		$sName = $Data['Name'];

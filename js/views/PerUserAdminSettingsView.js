@@ -56,7 +56,6 @@ CPerUserAdminSettingsView.prototype.ViewTemplate = '%ModuleName%_PerUserAdminSet
 CPerUserAdminSettingsView.prototype.onRoute = function ()
 {
 	this.getGroupsOfUser();
-	this.iAuthMode = Settings.AuthMode;
 };
 
 /**
