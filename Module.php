@@ -65,7 +65,8 @@ class Module extends \Aurora\System\Module\AbstractModule
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::TenantAdmin);
 		
-		if ($TenantId === 0 || $Name === '')
+		$oTenant = \Aurora\Modules\Core\Module::Decorator()->GetTenantById($TenantId);
+		if (!$oTenant || $Name === '')
 		{
 			throw new \Aurora\System\Exceptions\ApiException(\Aurora\System\Notifications::InvalidInputParameter);
 		}
