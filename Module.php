@@ -138,10 +138,13 @@ class Module extends \Aurora\System\Module\AbstractModule
 	/**
 	 * Obtains all Groups for specified tenant.
 	 * @param int $TenantId Tenant identifier.
+	 * @param int $Offset Offset of the list.
+	 * @param int $Limit Limit of the list.
+	 * @param string $Search Search string.
 	 * @return array|boolean
 	 * @throws \Aurora\System\Exceptions\ApiException
 	 */
-	public function GetGroups($TenantId = 0)
+	public function GetGroups($TenantId = 0, $Offset = 0, $Limit = 0, $Search = '')
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::TenantAdmin);
 		
@@ -150,11 +153,12 @@ class Module extends \Aurora\System\Module\AbstractModule
 			throw new \Aurora\System\Exceptions\ApiException(\Aurora\System\Notifications::InvalidInputParameter);
 		}
 		
-		$aGroups = $this->getGroupsManager()->getGroups($TenantId);
+		$aGroups = $this->getGroupsManager()->getGroups($TenantId, $Offset, $Limit, $Search);
+		$iGroupsCount = $this->getGroupsManager()->getGroupsCount($TenantId, $Search);
 		if (is_array($aGroups))
 		{
 			return [
-				'Count' => count($aGroups),
+				'Count' => $iGroupsCount,
 				'Items' => $aGroups
 			];
 		}

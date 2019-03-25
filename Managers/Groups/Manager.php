@@ -122,15 +122,37 @@ class Manager extends \Aurora\System\Managers\AbstractManager
 	}
 	
 	/**
+	 * @param int $iTenantId Tenant identifier.
+	 * @param string $sSearch Search string.
+	 * @return int|false
+	 */
+	public function getGroupsCount($iTenantId, $sSearch)
+	{
+		$aFilters = [
+			'TenantId' => [$iTenantId, '='],
+			'Name' => ['%' . $sSearch . '%', 'LIKE'],
+		];
+		
+		return $this->oEavManager->getEntitiesCount(
+			\Aurora\Modules\CoreUserGroups\Classes\Group::class,
+			$aFilters
+		);
+	}
+	
+	/**
 	 * Obtains all groups for specified tenant.
 	 * @param int $iTenantId Tenant identifier.
+	 * @param int $iOffset Offset of the list.
+	 * @param int $iLimit Limit of the list.
+	 * @param string $sSearch Search string.
 	 * @return array|boolean
 	 */
-	public function getGroups($iTenantId)
+	public function getGroups($iTenantId, $iOffset = 0, $iLimit = 0, $sSearch = '')
 	{
-		$iOffset = 0;
-		$iLimit = 0;
-		$aFilters = ['TenantId' => [$iTenantId, '=']];
+		$aFilters = [
+			'TenantId' => [$iTenantId, '='],
+			'Name' => ['%' . $sSearch . '%', 'LIKE']
+		];
 		$sOrderBy = 'Name';
 		$iOrderType = \Aurora\System\Enums\SortOrder::ASC;
 		
