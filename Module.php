@@ -77,19 +77,20 @@ class Module extends \Aurora\System\Module\AbstractModule
 	/**
 	 * Deletes Groups.
 	 * @param int $IdList List of Group identifiers.
-	 * @return boolean
+	 * @return array
 	 */
 	public function DeleteGroups($IdList)
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::TenantAdmin);
 		
-		$mResult = true;
+		$aUsersIds = [];
 		foreach ($IdList as $iGroupId)
 		{
-			$mResult = $mResult && $this->getGroupsManager()->deleteGroup($iGroupId);
+			$aGroupUsersIds = $this->getGroupsManager()->deleteGroup($iGroupId);
+			$aUsersIds = array_unique(array_merge($aUsersIds, $aGroupUsersIds));
 		}
 		
-		return $mResult;
+		return $aUsersIds;
 	}
 	
 	/**

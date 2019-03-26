@@ -86,11 +86,11 @@ class Manager extends \Aurora\System\Managers\AbstractManager
 	/**
 	 * Deletes group.
 	 * @param int $iGroupId Group identifier.
-	 * @return boolean
+	 * @return array
 	 */
 	public function deleteGroup($iGroupId)
 	{
-		$bResult = false;
+		$aGroupUsersIds = [];
 		$oGroup = $this->getGroup($iGroupId);
 		if ($oGroup)
 		{
@@ -99,10 +99,11 @@ class Manager extends \Aurora\System\Managers\AbstractManager
 			foreach ($aGroupUserObjects as $oGroupUser)
 			{
 				$aIdsToDelete[] = $oGroupUser->EntityId;
+				$aGroupUsersIds[] = $oGroupUser->UserId;
 			}
-			return $this->oEavManager->deleteEntities($aIdsToDelete);
+			$this->oEavManager->deleteEntities($aIdsToDelete);
 		}
-		return $bResult;
+		return $aGroupUsersIds;
 	}
 	
 	/**
