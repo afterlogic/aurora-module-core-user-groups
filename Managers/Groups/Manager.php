@@ -38,24 +38,29 @@ class Manager extends \Aurora\System\Managers\AbstractManager
 	 */
 	public function addToGroup($iGroupId, $aUsersIds)
 	{
+		$aFilters = [
+			'$AND' => [
+				'GroupId' => [$iGroupId, '='],
+				'UserId' => [$aUsersIds, 'IN']
+			]
+		];
+
+		$aGroupUser = $this->oEavManager->getEntities(\Aurora\Modules\CoreUserGroups\Classes\GroupUser::class, array(), 0, 0, $aFilters);
+		foreach ($aGroupUser as $oGroupUser)
+		{
+			$iKey = array_search($oGroupUser->UserId, $aUsersIds);
+			if ($iKey !== false)
+			{
+				unset($aUsersIds[$iKey]);
+			}
+		}
+		
 		foreach ($aUsersIds as $iUserId)
 		{
-			$aFilters = [
-				'$AND' => [
-					'GroupId' => [$iGroupId, '='],
-					'UserId' => [$iUserId, '=']
-				]
-			];
-			
-			$aGroupUser = $this->oEavManager->getEntities(\Aurora\Modules\CoreUserGroups\Classes\GroupUser::class, array(), 0, 0, $aFilters);
-
-			if (empty($aGroupUser))
-			{
-				$oUserGroup = new \Aurora\Modules\CoreUserGroups\Classes\GroupUser(\Aurora\Modules\CoreUserGroups\Module::GetName());
-				$oUserGroup->GroupId = $iGroupId;
-				$oUserGroup->UserId = $iUserId;
-				$this->oEavManager->saveEntity($oUserGroup);
-			}
+			$oUserGroup = new \Aurora\Modules\CoreUserGroups\Classes\GroupUser(\Aurora\Modules\CoreUserGroups\Module::GetName());
+			$oUserGroup->GroupId = $iGroupId;
+			$oUserGroup->UserId = $iUserId;
+			$this->oEavManager->saveEntity($oUserGroup);
 		}
 		
 		return true;

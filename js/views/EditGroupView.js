@@ -32,6 +32,16 @@ function CEditGroupView()
 	this.users = ko.observableArray([]);
 	this.usersLoading = ko.observable(false);
 	
+	this.checkedAll = ko.observable(false);
+	this.checkedAll.subscribe(function () {
+		_.each(this.users(), function (oUser) {
+			oUser.checkedUser(this.checkedAll());
+		}.bind(this));
+	}, this);
+	this.users.subscribe(function () {
+		this.checkedAll(false);
+	}, this);
+	
 	App.broadcastEvent('%ModuleName%::ConstructView::after', {'Name': this.ViewConstructorName, 'View': this});
 }
 
@@ -188,7 +198,9 @@ CEditGroupView.prototype.removeSelectedFromGroup = function ()
  */
 CEditGroupView.prototype.confirmedRemoveSelectedFromGroup = function (aCheckedUserId)
 {
+	Screens.showLoading(TextUtils.i18n('%MODULENAME%/INFO_GROUP_USERS_REMOVING_PLURAL', {}, null, aCheckedUserId.length));
 	Ajax.send(Settings.ServerModuleName, 'RemoveUsersFromGroup', {'GroupId': this.id(), 'UsersIds': aCheckedUserId}, function (oResponse) {
+		Screens.hideLoading();
 		if (!oResponse.Result)
 		{
 			Api.showErrorByCode(oResponse, TextUtils.i18n('%MODULENAME%/ERROR_REMOVE_FROM_GROUP_PLURAL', {}, null, aCheckedUserId.length));

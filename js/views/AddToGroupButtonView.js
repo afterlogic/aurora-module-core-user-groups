@@ -46,7 +46,9 @@ CAddToGroupButtonView.prototype.addToGroup = function (iId)
 	var aUsersIds = _.map(this.checkedEntities(), function (oEntity) {
 		return oEntity.Id;
 	});
+	Screens.showLoading(TextUtils.i18n('%MODULENAME%/INFO_GROUP_USERS_ADDING_PLURAL', {}, null, aUsersIds.length));
 	Ajax.send(Settings.ServerModuleName, 'AddToGroup', { 'GroupId': iId, UsersIds:  aUsersIds}, function (oResponse, oRequest) {
+		Screens.hideLoading();
 		if (oResponse.Result)
 		{
 			Screens.showReport(TextUtils.i18n('%MODULENAME%/REPORT_ADD_TO_GROUP_PLURAL', {}, null, aUsersIds.length));

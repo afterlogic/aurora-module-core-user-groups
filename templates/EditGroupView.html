@@ -7,6 +7,10 @@
 </div>
 <div class="row group_user_list_row" data-bind="visible: users().length > 0">
 	<div data-bind="i18n: {'key': '%MODULENAME%/LABEL_GROUP_USERS'}"></div>
+	<div class="user_list_all_check">
+		<input type="checkbox" id="checkAll" data-bind="checked: checkedAll" />
+		<label for="checkAll" data-bind="i18n: {'key': '%MODULENAME%/ACTION_CHECK_ALL_USERS'}"></label>
+	</div>
 	<div data-bind="foreach: users" class="user_list">
 		<div class="user_item">
 			<input type="checkbox" data-bind="checked: checkedUser, attr: { 'id': 'checkedUser' + Id }" />
