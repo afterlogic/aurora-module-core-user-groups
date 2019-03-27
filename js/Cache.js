@@ -89,17 +89,20 @@ CCache.prototype.onAjaxResponse = function (oParams)
 {
 	if (oParams.Response.Module === Settings.ServerModuleName && oParams.Response.Method === 'GetGroups')
 	{
-		var
-			iTenantId = oParams.Request.Parameters.TenantId,
-			aGroups = oParams.Response.Result && _.isArray(oParams.Response.Result.Items) ? oParams.Response.Result.Items : []
-		;
-		
-		_.each(aGroups, function (oGroup) {
-			oGroup.Id = Types.pInt(oGroup.Id);
-		});
-		
-		this.groupsByTenants()[iTenantId] = aGroups;
-		this.groupsByTenants.valueHasMutated();
+		if (oParams.Request.Parameters.Search === '' && oParams.Request.Parameters.Offset === 0)
+		{
+			var
+				iTenantId = oParams.Request.Parameters.TenantId,
+				aGroups = oParams.Response.Result && _.isArray(oParams.Response.Result.Items) ? oParams.Response.Result.Items : []
+			;
+
+			_.each(aGroups, function (oGroup) {
+				oGroup.Id = Types.pInt(oGroup.Id);
+			});
+
+			this.groupsByTenants()[iTenantId] = aGroups;
+			this.groupsByTenants.valueHasMutated();
+		}
 	}
 };
 
