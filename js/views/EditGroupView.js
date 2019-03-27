@@ -145,19 +145,23 @@ CEditGroupView.prototype.getGroupUsers = function ()
 	if (Types.isPositiveNumber(this.id()))
 	{
 		this.usersLoading(true);
-		Ajax.send(Settings.ServerModuleName, 'GetGroupUsers', {'GroupId': this.id()}, function (oResponse) {
-			this.usersLoading(false);
-			if (oResponse.Result)
+		Ajax.send(Settings.ServerModuleName, 'GetGroupUsers', {'GroupId': this.id()}, function (oResponse, oRequest) {
+			var iRequestedGroupId = oRequest.Parameters && oRequest.Parameters.GroupId;
+			if (iRequestedGroupId === this.id())
 			{
-				var aUsers = [];
-				_.each(oResponse.Result, function (oUser) {
-					if (oUser && oUser.Id)
-					{
-						oUser.checkedUser = ko.observable(false);
-						aUsers.push(oUser);
-					}
-				});
-				this.users(aUsers);
+				this.usersLoading(false);
+				if (oResponse.Result)
+				{
+					var aUsers = [];
+					_.each(oResponse.Result, function (oUser) {
+						if (oUser && oUser.Id)
+						{
+							oUser.checkedUser = ko.observable(false);
+							aUsers.push(oUser);
+						}
+					});
+					this.users(aUsers);
+				}
 			}
 		}, this);
 	}
