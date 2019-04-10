@@ -89,7 +89,11 @@ CCache.prototype.onAjaxResponse = function (oParams)
 {
 	if (oParams.Response.Module === Settings.ServerModuleName && oParams.Response.Method === 'GetGroups')
 	{
-		if (oParams.Request.Parameters.Search === '' && oParams.Request.Parameters.Offset === 0)
+		var
+			sSearch = Types.pString(oParams.Request.Parameters.Search),
+			iOffset = Types.pInt(oParams.Request.Parameters.Offset)
+		;
+		if (sSearch === '' && iOffset === 0)
 		{
 			var
 				iTenantId = oParams.Request.Parameters.TenantId,
