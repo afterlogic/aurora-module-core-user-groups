@@ -25,7 +25,6 @@ var
  */
 function CEditGroupView()
 {
-	this.sHeading = TextUtils.i18n('%MODULENAME%/HEADING_CREATE_GROUP');
 	this.id = ko.observable(0);
 	this.name = ko.observable('');
 	
@@ -41,6 +40,10 @@ function CEditGroupView()
 	this.users.subscribe(function () {
 		this.checkedAll(false);
 	}, this);
+	
+	this.sHeading = TextUtils.i18n('%MODULENAME%/HEADING_CREATE_GROUP');
+	this.sActionCreate = TextUtils.i18n('COREWEBCLIENT/ACTION_CREATE');
+	this.sActionCreateInProgress = TextUtils.i18n('COREWEBCLIENT/ACTION_CREATE_IN_PROGRESS');
 	
 	App.broadcastEvent('%ModuleName%::ConstructView::after', {'Name': this.ViewConstructorName, 'View': this});
 }
