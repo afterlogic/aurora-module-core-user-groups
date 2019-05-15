@@ -186,6 +186,26 @@ class Module extends \Aurora\System\Module\AbstractModule
 		return $this->getGroupsManager()->getGroupsOfUser($UserId);
 	}
 	
+	public function GetGroupNamesOfUser($UserId = 0)
+	{
+		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
+		
+		if ($UserId === 0)
+		{
+			throw new \Aurora\System\Exceptions\ApiException(\Aurora\System\Notifications::InvalidInputParameter);
+		}
+		
+		$aGroupUsers = $this->getGroupsManager()->getGroupsOfUser($UserId);
+		$aGroups = [];
+		foreach ($aGroupUsers as $oGroupUser)
+		{
+			$oGroup = $this->getGroupsManager()->getGroup($oGroupUser->GroupId);
+			$aGroups[] = $oGroup->Name;
+		}
+		
+		return $aGroups;
+	}
+	
 	/**
 	 * Removes users from group.
 	 * @param int $GroupId Group identifier.
