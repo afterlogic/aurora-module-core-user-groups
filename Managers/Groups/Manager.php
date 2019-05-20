@@ -187,6 +187,25 @@ class Manager extends \Aurora\System\Managers\AbstractManager
 	}
 	
 	/**
+	 * Removes all user groups.
+	 * @param int $iUserId User identifier.
+	 * @return boolean
+	 */
+	public function removeAllUserGroups($iUserId)
+	{
+		\Aurora\System\Api::Log($iUserId);
+		$aGroupUsers = $this->getGroupsOfUser($iUserId);
+		\Aurora\System\Api::Log($aGroupUsers);
+		$aGroupUserToDelete = [];
+		foreach ($aGroupUsers as $oGroupUser)
+		{
+			$aGroupUserToDelete[] = $oGroupUser->EntityId;
+		}
+		\Aurora\System\Api::Log($aGroupUserToDelete);
+		return $this->oEavManager->deleteEntities(array_unique($aGroupUserToDelete));
+	}
+	
+	/**
 	 * Removes users from group.
 	 * @param int $iGroupId Group identifier.
 	 * @param array $aUsersIds List of user identifiers.

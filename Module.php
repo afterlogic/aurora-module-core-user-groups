@@ -26,6 +26,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 	public function init()
 	{
 		$this->subscribeEvent('Core::DeleteTenant::after', array($this, 'onAfterDeleteTenant'));
+		$this->subscribeEvent('Core::DeleteUser::before', array($this, 'onBeforeDeleteUser'));
 	}
 	
 	public function getGroupsManager()
@@ -275,5 +276,29 @@ class Module extends \Aurora\System\Module\AbstractModule
 		{
 			$this->getGroupsManager()->deleteGroup($oGropup->EntityId);
 		}
+	}
+	
+	/**
+	 * Removes all groups of user before its deleting.
+	 * @param array $aArgs
+	 * @param mixed $mResult
+	 */
+	public function onBeforeDeleteUser($aArgs, &$mResult)
+	{
+		$oAuthenticatedUser = \Aurora\System\Api::getAuthenticatedUser();
+		
+		$oCoreDecorator = \Aurora\Modules\Core\Module::Decorator();
+		$oUser = $oCoreDecorator ? $oCoreDecorator->GetUser($aArgs['UserId']) : null;
+		
+		if ($oUser instanceof \Aurora\Modules\Core\Classes\User && $oAuthenticatedUser->Role === \Aurora\System\Enums\UserRole::TenantAdmin && $oUser->IdTenant === $oAuthenticatedUser->IdTenant)
+		{
+			\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::TenantAdmin);
+		}
+		else
+		{
+			\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::SuperAdmin);
+		}
+		
+		$this->getGroupsManager()->removeAllUserGroups($oUser->EntityId);
 	}
 }
