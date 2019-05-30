@@ -127,7 +127,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 	 */
 	public function GetGroup($Id)
 	{
-		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::TenantAdmin);
+		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 		
 		return $this->getGroupsManager()->getGroup($Id);
 	}
