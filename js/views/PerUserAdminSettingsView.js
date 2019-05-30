@@ -9,6 +9,7 @@ var
 	
 	Ajax = require('%PathToCoreWebclientModule%/js/Ajax.js'),
 	Api = require('%PathToCoreWebclientModule%/js/Api.js'),
+	App = require('%PathToCoreWebclientModule%/js/App.js'),
 	Screens = require('%PathToCoreWebclientModule%/js/Screens.js'),
 	
 	ModulesManager = require('%PathToCoreWebclientModule%/js/ModulesManager.js'),
@@ -29,14 +30,15 @@ function CPerUserAdminSettingsView()
 	
 	this.iUserId = 0;
 	
+	/* Editable fields */
+	this.selectedGroup = ko.observable(0);
+	/*-- Editable fields */
+	
 	this.groups = ko.computed(function () {
 		return _.map(Cache.groups(), function (oGroup) {
 			return {
 				iId: oGroup.Id,
-				sName: oGroup.Name,
-				/* Editable fields */
-				checkedGroup: ko.observable(false)
-				/*-- Editable fields */
+				sName: oGroup.Name
 			};
 		});
 	}, this);
@@ -44,6 +46,26 @@ function CPerUserAdminSettingsView()
 	this.visible = ko.computed(function () {
 		return this.entityType() === 'User' && this.groups().length > 0;
 	}, this);
+	
+	App.subscribeEvent('ReceiveAjaxResponse::after', _.bind(function (oParams) {
+		if (oParams.Request.Module === 'AdminPanelWebclient'
+			&& oParams.Request.Method === 'GetEntity'
+			&& oParams.Request.Parameters.Type === 'User'
+			&& oParams.Request.Parameters.Id === this.iUserId
+			&& oParams.Response.Result
+			&& oParams.Response.Result.EntityId === this.iUserId)
+		{
+			this.selectedGroup(oParams.Response.Result['CoreUserGroups::GroupId']);
+		}
+		
+		if (oParams.Request.Module === 'CoreUserGroups'
+			&& oParams.Request.Method === 'AddToGroup'
+			&& _.indexOf(oParams.Request.Parameters.UsersIds, this.iUserId) !== -1
+			&& oParams.Response.Result)
+		{
+			this.selectedGroup(oParams.Request.Parameters.GroupId.toString());
+		}
+	}, this));
 }
 
 _.extendOwn(CPerUserAdminSettingsView.prototype, CAbstractSettingsFormView.prototype);
@@ -51,56 +73,22 @@ _.extendOwn(CPerUserAdminSettingsView.prototype, CAbstractSettingsFormView.proto
 CPerUserAdminSettingsView.prototype.ViewTemplate = '%ModuleName%_PerUserAdminSettingsView';
 
 /**
- * Runs after routing to this view.
+ * Updates group identifier of user.
  */
-CPerUserAdminSettingsView.prototype.onRoute = function ()
-{
-	this.getGroupsOfUser();
-};
-
-/**
- * Requests list of groups of current user.
- */
-CPerUserAdminSettingsView.prototype.getGroupsOfUser = function ()
-{
-	if (Types.isPositiveNumber(this.iUserId))
-	{
-		Ajax.send(Settings.ServerModuleName, 'GetGroupsOfUser', {'UserId': this.iUserId}, function (oResponse) {
-			if (oResponse.Result)
-			{
-				_.each(this.groups(), function (oGroup) {
-					var bCheckedGroup = !!_.find(oResponse.Result, function (oGroupUser) {
-						return oGroup.iId === oGroupUser.GroupId;
-					});
-					oGroup.checkedGroup(bCheckedGroup);
-				}.bind(this));
-			}
-		}, this);
-	}
-};
-
-/**
- * Saves group list fo current user.
- */
-CPerUserAdminSettingsView.prototype.saveGroupsOfUser = function()
+CPerUserAdminSettingsView.prototype.updateUserGroup = function()
 {
 	this.isSaving(true);
 	
 	var
-		aUserGroups = _.filter(this.groups(), function (oGroup) {
-			return oGroup.checkedGroup();
-		}),
 		oParameters = {
 			'UserId': this.iUserId,
-			'GroupsIds': _.map(aUserGroups, function (oGroup) {
-				return oGroup.iId;
-			})
+			'GroupId': this.selectedGroup()
 		}
 	;
 	
 	Ajax.send(
 		Settings.ServerModuleName,
-		'SaveGroupsOfUser',
+		'UpdateUserGroup',
 		oParameters,
 		function (oResponse, oRequest) {
 			this.isSaving(false);

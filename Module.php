@@ -26,7 +26,13 @@ class Module extends \Aurora\System\Module\AbstractModule
 	public function init()
 	{
 		$this->subscribeEvent('Core::DeleteTenant::after', array($this, 'onAfterDeleteTenant'));
-		$this->subscribeEvent('Core::DeleteUser::before', array($this, 'onBeforeDeleteUser'));
+		
+		\Aurora\Modules\Core\Classes\Tenant::extend(
+			self::GetName(),
+			[
+				'GroupId' => array('int', 0),
+			]
+		);		
 	}
 	
 	public function getGroupsManager()
@@ -54,7 +60,17 @@ class Module extends \Aurora\System\Module\AbstractModule
 			throw new \Aurora\System\Exceptions\ApiException(\Aurora\System\Notifications::InvalidInputParameter);
 		}
 		
-		return $this->getGroupsManager()->addToGroup($GroupId, $UsersIds);
+		foreach ($UsersIds as $iUserId)
+		{
+			$oUser = \Aurora\Modules\Core\Module::Decorator()->GetUser($iUserId);
+			if ($oUser instanceof \Aurora\Modules\Core\Classes\User)
+			{
+				$oUser->{self::GetName() . '::GroupId'} = $GroupId;
+				$oUser->saveAttribute(self::GetName() . '::GroupId');
+			}
+		}
+		
+		return true;
 	}
 	
 	/**
@@ -86,11 +102,19 @@ class Module extends \Aurora\System\Module\AbstractModule
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::TenantAdmin);
 		
+		function GetEntityId($oUser)
+		{
+			return $oUser->EntityId;
+		}
 		$aUsersIds = [];
 		foreach ($IdList as $iGroupId)
 		{
-			$aGroupUsersIds = $this->getGroupsManager()->deleteGroup($iGroupId);
-			$aUsersIds = array_unique(array_merge($aUsersIds, $aGroupUsersIds));
+			if ($this->getGroupsManager()->deleteGroup($iGroupId))
+			{
+				$aUsers = $this->Decorator()->GetGroupUsers($iGroupId);
+				$aGroupUsersIds = array_map('GetEntityId', $aUsers);
+				$aUsersIds = array_unique(array_merge($aUsersIds, $aGroupUsersIds));
+			}
 		}
 		
 		return $aUsersIds;
@@ -122,21 +146,8 @@ class Module extends \Aurora\System\Module\AbstractModule
 			throw new \Aurora\System\Exceptions\ApiException(\Aurora\System\Notifications::InvalidInputParameter);
 		}
 		
-		$aGroupUserObjects = $this->getGroupsManager()->getGroupUserObjects($GroupId);
-		$aUsersIds = [];
-		foreach ($aGroupUserObjects as $oGroupUser)
-		{
-			$aUsersIds[] = $oGroupUser->UserId;
-		}
-		$aFilters = ['EntityId' => [$aUsersIds, 'IN']];
-		$oCoreDecorator = \Aurora\Modules\Core\Module::Decorator();
-		$aUsers = [];
-		if ($oCoreDecorator && !empty($aUsersIds))
-		{
-			$aUsers = $oCoreDecorator->GetUserList(0, 0, 'PublicId', \Aurora\System\Enums\SortOrder::ASC, '', $aFilters);
-		}
-		
-		return $aUsers;
+		$aFilters = [self::GetName() . '::GroupId' => [$GroupId, '=']];
+		return \Aurora\Modules\Core\Module::Decorator()->GetUserList(0, 0, 'PublicId', \Aurora\System\Enums\SortOrder::ASC, '', $aFilters);
 	}
 	
 	/**
@@ -171,43 +182,6 @@ class Module extends \Aurora\System\Module\AbstractModule
 	}
 	
 	/**
-	 * Obtains all groups of specified user.
-	 * @param int $UserId User identifier.
-	 * @return array|boolean
-	 */
-	public function GetGroupsOfUser($UserId = 0)
-	{
-		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::TenantAdmin);
-		
-		if ($UserId === 0)
-		{
-			throw new \Aurora\System\Exceptions\ApiException(\Aurora\System\Notifications::InvalidInputParameter);
-		}
-		
-		return $this->getGroupsManager()->getGroupsOfUser($UserId);
-	}
-	
-	public function GetGroupNamesOfUser($UserId = 0)
-	{
-		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
-		
-		if ($UserId === 0)
-		{
-			throw new \Aurora\System\Exceptions\ApiException(\Aurora\System\Notifications::InvalidInputParameter);
-		}
-		
-		$aGroupUsers = $this->getGroupsManager()->getGroupsOfUser($UserId);
-		$aGroups = [];
-		foreach ($aGroupUsers as $oGroupUser)
-		{
-			$oGroup = $this->getGroupsManager()->getGroup($oGroupUser->GroupId);
-			$aGroups[] = $oGroup->Name;
-		}
-		
-		return $aGroups;
-	}
-	
-	/**
 	 * Removes users from group.
 	 * @param int $GroupId Group identifier.
 	 * @param array $UsersIds List of user identifiers.
@@ -228,10 +202,10 @@ class Module extends \Aurora\System\Module\AbstractModule
 	/**
 	 * Saves list of groups for specified user.
 	 * @param int $UserId User identifier.
-	 * @param array $GroupsIds List of group identifiers.
+	 * @param array $GroupId Group identifier.
 	 * @return boolean
 	 */
-	public function SaveGroupsOfUser($UserId, $GroupsIds)
+	public function UpdateUserGroup($UserId, $GroupId)
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::TenantAdmin);
 		
@@ -240,7 +214,14 @@ class Module extends \Aurora\System\Module\AbstractModule
 			throw new \Aurora\System\Exceptions\ApiException(\Aurora\System\Notifications::InvalidInputParameter);
 		}
 		
-		return $this->getGroupsManager()->saveGroupsOfUser($UserId, $GroupsIds);
+		$oUser = \Aurora\Modules\Core\Module::Decorator()->GetUser($UserId);
+		if ($oUser instanceof \Aurora\Modules\Core\Classes\User)
+		{
+			$oUser->{self::GetName() . '::GroupId'} = $GroupId;
+			$oUser->saveAttribute(self::GetName() . '::GroupId');
+		}
+		
+		return true;
 	}
 	
 	/**
@@ -276,29 +257,5 @@ class Module extends \Aurora\System\Module\AbstractModule
 		{
 			$this->getGroupsManager()->deleteGroup($oGropup->EntityId);
 		}
-	}
-	
-	/**
-	 * Removes all groups of user before its deleting.
-	 * @param array $aArgs
-	 * @param mixed $mResult
-	 */
-	public function onBeforeDeleteUser($aArgs, &$mResult)
-	{
-		$oAuthenticatedUser = \Aurora\System\Api::getAuthenticatedUser();
-		
-		$oCoreDecorator = \Aurora\Modules\Core\Module::Decorator();
-		$oUser = $oCoreDecorator ? $oCoreDecorator->GetUser($aArgs['UserId']) : null;
-		
-		if ($oUser instanceof \Aurora\Modules\Core\Classes\User && $oAuthenticatedUser->Role === \Aurora\System\Enums\UserRole::TenantAdmin && $oUser->IdTenant === $oAuthenticatedUser->IdTenant)
-		{
-			\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::TenantAdmin);
-		}
-		else
-		{
-			\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::SuperAdmin);
-		}
-		
-		$this->getGroupsManager()->removeAllUserGroups($oUser->EntityId);
 	}
 }

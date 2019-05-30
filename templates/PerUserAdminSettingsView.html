@@ -8,9 +8,9 @@
 				<!-- ko foreach: groups -->
 				<div class="row"> 
 					<span class="value">
-						<label class="custom_checkbox" data-bind="css: {'checked': checkedGroup}">
+						<label class="custom_radio" data-bind="css: {'checked': $parent.selectedGroup() === iId.toString()}">
 							<span class="icon"></span>
-							<input type="checkbox" data-bind="checked: checkedGroup, attr: {'id': 'checkedGroup_' + iId}" />
+							<input type="radio" data-bind="checked: $parent.selectedGroup, attr: {'id': 'checkedGroup_' + iId, 'value': iId}" />
 						</label>
 						<label data-bind="text: sName, attr: {'for': 'checkedGroup_' + iId}"></label>
 					</span>
@@ -19,7 +19,7 @@
 			</div>
 
 			<div class="buttons">
-				<span class="button" data-bind="click: saveGroupsOfUser, visible: !isSaving()">
+				<span class="button" data-bind="click: updateUserGroup, visible: !isSaving()">
 					<span data-bind="i18n: {'key': 'COREWEBCLIENT/ACTION_SAVE'}"></span>
 				</span>
 				<span class="button" data-bind="visible: isSaving()">

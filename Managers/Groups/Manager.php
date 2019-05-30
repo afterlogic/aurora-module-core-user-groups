@@ -33,42 +33,6 @@ class Manager extends \Aurora\System\Managers\AbstractManager
 	}
 
 	/**
-	 * Adds users to group.
-	 * @param int $iGroupId Group identifier.
-	 * @param array $aUsersIds List of user identifiers.
-	 * @return boolean
-	 */
-	public function addToGroup($iGroupId, $aUsersIds)
-	{
-		$aFilters = [
-			'$AND' => [
-				'GroupId' => [$iGroupId, '='],
-				'UserId' => [$aUsersIds, 'IN']
-			]
-		];
-
-		$aGroupUser = $this->oEavManager->getEntities(\Aurora\Modules\CoreUserGroups\Classes\GroupUser::class, array(), 0, 0, $aFilters);
-		foreach ($aGroupUser as $oGroupUser)
-		{
-			$iKey = array_search($oGroupUser->UserId, $aUsersIds);
-			if ($iKey !== false)
-			{
-				unset($aUsersIds[$iKey]);
-			}
-		}
-		
-		foreach ($aUsersIds as $iUserId)
-		{
-			$oUserGroup = new \Aurora\Modules\CoreUserGroups\Classes\GroupUser(\Aurora\Modules\CoreUserGroups\Module::GetName());
-			$oUserGroup->GroupId = $iGroupId;
-			$oUserGroup->UserId = $iUserId;
-			$this->oEavManager->saveEntity($oUserGroup);
-		}
-		
-		return true;
-	}
-	
-	/**
 	 * Creates group.
 	 * @param int $iTenantId Tenant identifier.
 	 * @param string $sName Group name.
@@ -92,20 +56,7 @@ class Manager extends \Aurora\System\Managers\AbstractManager
 	 */
 	public function deleteGroup($iGroupId)
 	{
-		$aGroupUsersIds = [];
-		$oGroup = $this->getGroup($iGroupId);
-		if ($oGroup)
-		{
-			$aGroupUserObjects = $this->getGroupUserObjects($iGroupId);
-			$aIdsToDelete = [$iGroupId];
-			foreach ($aGroupUserObjects as $oGroupUser)
-			{
-				$aIdsToDelete[] = $oGroupUser->EntityId;
-				$aGroupUsersIds[] = $oGroupUser->UserId;
-			}
-			$this->oEavManager->deleteEntities($aIdsToDelete);
-		}
-		return $aGroupUsersIds;
+		return $this->oEavManager->deleteEntities([$iGroupId]);
 	}
 	
 	/**
@@ -116,17 +67,6 @@ class Manager extends \Aurora\System\Managers\AbstractManager
 	public function getGroup($iGroupId)
 	{
 		return $this->oEavManager->getEntity($iGroupId, \Aurora\Modules\CoreUserGroups\Classes\Group::class);
-	}
-	
-	/**
-	 * Obtains list of group-user binding objects.
-	 * @param int $iGroupId Group identifier.
-	 * @return array|boolean
-	 */
-	public function getGroupUserObjects($iGroupId)
-	{
-		$aFilters = ['GroupId' => [$iGroupId, '=']];
-		return $this->oEavManager->getEntities( \Aurora\Modules\CoreUserGroups\Classes\GroupUser::class, array(), 0, 0, $aFilters);
 	}
 	
 	/**
@@ -176,36 +116,6 @@ class Manager extends \Aurora\System\Managers\AbstractManager
 	}
 	
 	/**
-	 * Obtains all groups of specified user.
-	 * @param int $iUserId User identifier.
-	 * @return array|boolean
-	 */
-	public function getGroupsOfUser($iUserId)
-	{
-		$aFilters = ['UserId' => [$iUserId, '=']];
-		return $this->oEavManager->getEntities( \Aurora\Modules\CoreUserGroups\Classes\GroupUser::class, array(), 0, 0, $aFilters);
-	}
-	
-	/**
-	 * Removes all user groups.
-	 * @param int $iUserId User identifier.
-	 * @return boolean
-	 */
-	public function removeAllUserGroups($iUserId)
-	{
-		\Aurora\System\Api::Log($iUserId);
-		$aGroupUsers = $this->getGroupsOfUser($iUserId);
-		\Aurora\System\Api::Log($aGroupUsers);
-		$aGroupUserToDelete = [];
-		foreach ($aGroupUsers as $oGroupUser)
-		{
-			$aGroupUserToDelete[] = $oGroupUser->EntityId;
-		}
-		\Aurora\System\Api::Log($aGroupUserToDelete);
-		return $this->oEavManager->deleteEntities(array_unique($aGroupUserToDelete));
-	}
-	
-	/**
 	 * Removes users from group.
 	 * @param int $iGroupId Group identifier.
 	 * @param array $aUsersIds List of user identifiers.
@@ -213,61 +123,18 @@ class Manager extends \Aurora\System\Managers\AbstractManager
 	 */
 	public function removeUsersFromGroup($iGroupId, $aUsersIds)
 	{
+		$aAndFilter = [];
+		$aAndFilter[\Aurora\Modules\CoreUserGroups\Module::GetName() . '::GroupId'] = [$iGroupId, '='];
+		$aAndFilter['EntityId'] = [$aUsersIds, 'IN'];
 		$aFilters = [
-			'GroupId' => [$iGroupId, '=']
+			'$AND' => $aAndFilter
 		];
-		$aGroupUser = $this->oEavManager->getEntities(\Aurora\Modules\CoreUserGroups\Classes\GroupUser::class, array(), 0, 0, $aFilters);
+		$aUsers = $this->oEavManager->getEntities(\Aurora\Modules\Core\Classes\User::class, array(), 0, 0, $aFilters);
 		
-		$aGroupUserToDelete = [];
-		foreach ($aGroupUser as $oGroupUser)
+		foreach ($aUsers as $oUser)
 		{
-			$iKey = array_search($oGroupUser->UserId, $aUsersIds);
-			if ($iKey !== false)
-			{
-				$aGroupUserToDelete[] = $oGroupUser->EntityId;
-			}
-		}
-		
-		$this->oEavManager->deleteEntities($aGroupUserToDelete);
-		
-		return true;
-	}
-	
-	/**
-	 * Saves list of groups for specified user.
-	 * @param int $iUserId User identifier.
-	 * @param array $aGroupsIds List of group identifiers.
-	 * @return boolean
-	 */
-	public function saveGroupsOfUser($iUserId, $aGroupsIds)
-	{
-		$aFilters = [
-			'UserId' => [$iUserId, '=']
-		];
-		$aGroupUser = $this->oEavManager->getEntities(\Aurora\Modules\CoreUserGroups\Classes\GroupUser::class, array(), 0, 0, $aFilters);
-		
-		$aGroupUserToDelete = [];
-		foreach ($aGroupUser as $oGroupUser)
-		{
-			$iKey = array_search($oGroupUser->GroupId, $aGroupsIds);
-			if ($iKey === false)
-			{
-				$aGroupUserToDelete[] = $oGroupUser->EntityId;
-			}
-			else
-			{
-				unset($aGroupsIds[$iKey]);
-			}
-		}
-		
-		$this->oEavManager->deleteEntities($aGroupUserToDelete);
-
-		foreach ($aGroupsIds as $iGroupId)
-		{
-			$oUserGroup = new \Aurora\Modules\CoreUserGroups\Classes\GroupUser(\Aurora\Modules\CoreUserGroups\Module::GetName());
-			$oUserGroup->GroupId = $iGroupId;
-			$oUserGroup->UserId = $iUserId;
-			$this->oEavManager->saveEntity($oUserGroup);
+			$oUser->{\Aurora\Modules\CoreUserGroups\Module::GetName() . '::GroupId'} = 0;
+			$oUser->saveAttribute(\Aurora\Modules\CoreUserGroups\Module::GetName() . '::GroupId');
 		}
 		
 		return true;
@@ -283,7 +150,6 @@ class Manager extends \Aurora\System\Managers\AbstractManager
 	{
 		$oGroup = $this->getGroup($iGroupId);
 		$oGroup->Name = $sName;
-		
-		return $this->oEavManager->saveEntity($oGroup);
+		return $oGroup->saveAttribute('Name');
 	}
 }
