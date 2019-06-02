@@ -55,7 +55,7 @@ function CPerUserAdminSettingsView()
 			&& oParams.Response.Result
 			&& oParams.Response.Result.EntityId === this.iUserId)
 		{
-			this.selectedGroup(oParams.Response.Result['CoreUserGroups::GroupId']);
+			this.selectedGroup(oParams.Response.Result['CoreUserGroups::GroupId'].toString());
 		}
 		
 		if (oParams.Request.Module === 'CoreUserGroups'
