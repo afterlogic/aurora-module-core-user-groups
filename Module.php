@@ -27,7 +27,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 	{
 		$this->subscribeEvent('Core::DeleteTenant::after', array($this, 'onAfterDeleteTenant'));
 		
-		\Aurora\Modules\Core\Classes\Tenant::extend(
+		\Aurora\Modules\Core\Classes\User::extend(
 			self::GetName(),
 			[
 				'GroupId' => array('int', 0),
@@ -65,7 +65,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 			$oUser = \Aurora\Modules\Core\Module::Decorator()->GetUser($iUserId);
 			if ($oUser instanceof \Aurora\Modules\Core\Classes\User)
 			{
-				$oUser->{self::GetName() . '::GroupId'} = $GroupId;
+				$oUser->{self::GetName() . '::GroupId'} = (int) $GroupId;
 				$oUser->saveAttribute(self::GetName() . '::GroupId');
 			}
 		}
@@ -217,7 +217,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 		$oUser = \Aurora\Modules\Core\Module::Decorator()->GetUser($UserId);
 		if ($oUser instanceof \Aurora\Modules\Core\Classes\User)
 		{
-			$oUser->{self::GetName() . '::GroupId'} = $GroupId;
+			$oUser->{self::GetName() . '::GroupId'} = (int) $GroupId;
 			$oUser->saveAttribute(self::GetName() . '::GroupId');
 		}
 		

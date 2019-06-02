@@ -82,7 +82,7 @@ CPerUserAdminSettingsView.prototype.updateUserGroup = function()
 	var
 		oParameters = {
 			'UserId': this.iUserId,
-			'GroupId': this.selectedGroup()
+			'GroupId': Types.pInt(this.selectedGroup())
 		}
 	;
 	

@@ -150,6 +150,7 @@ class Manager extends \Aurora\System\Managers\AbstractManager
 	{
 		$oGroup = $this->getGroup($iGroupId);
 		$oGroup->Name = $sName;
-		return $oGroup->saveAttribute('Name');
+		$oGroup->saveAttribute('Name');
+		return true;
 	}
 }
