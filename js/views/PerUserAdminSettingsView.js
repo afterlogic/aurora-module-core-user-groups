@@ -55,7 +55,7 @@ function CPerUserAdminSettingsView()
 			&& oParams.Response.Result
 			&& oParams.Response.Result.EntityId === this.iUserId)
 		{
-			this.selectedGroup(oParams.Response.Result['CoreUserGroups::GroupId'].toString());
+			this.selectedGroup(Types.pString(oParams.Response.Result['CoreUserGroups::GroupId']));
 		}
 		
 		if (oParams.Request.Module === 'CoreUserGroups'
@@ -63,7 +63,7 @@ function CPerUserAdminSettingsView()
 			&& _.indexOf(oParams.Request.Parameters.UsersIds, this.iUserId) !== -1
 			&& oParams.Response.Result)
 		{
-			this.selectedGroup(oParams.Request.Parameters.GroupId.toString());
+			this.selectedGroup(Types.pString(oParams.Request.Parameters.GroupId));
 		}
 	}, this));
 }
