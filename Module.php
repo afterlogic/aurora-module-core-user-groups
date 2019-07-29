@@ -62,7 +62,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 		
 		foreach ($UsersIds as $iUserId)
 		{
-			$oUser = \Aurora\Modules\Core\Module::Decorator()->GetUser($iUserId);
+			$oUser = \Aurora\Modules\Core\Module::Decorator()->GetUserUnchecked($iUserId);
 			if ($oUser instanceof \Aurora\Modules\Core\Classes\User)
 			{
 				$oUser->{self::GetName() . '::GroupId'} = (int) $GroupId;
@@ -84,7 +84,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::TenantAdmin);
 		
-		$oTenant = \Aurora\Modules\Core\Module::Decorator()->GetTenantById($TenantId);
+		$oTenant = \Aurora\Modules\Core\Module::Decorator()->GetTenantUnchecked($TenantId);
 		if (!$oTenant || $Name === '')
 		{
 			throw new \Aurora\System\Exceptions\ApiException(\Aurora\System\Notifications::InvalidInputParameter);
@@ -111,7 +111,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 		{
 			if ($this->getGroupsManager()->deleteGroup($iGroupId))
 			{
-				$aUsers = $this->Decorator()->GetGroupUsers($iGroupId);
+				$aUsers = self::Decorator()->GetGroupUsers($iGroupId);
 				$aGroupUsersIds = array_map('GetEntityId', $aUsers);
 				$aUsersIds = array_unique(array_merge($aUsersIds, $aGroupUsersIds));
 			}
@@ -137,7 +137,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 	 * @param int $GroupId Group identifier.
 	 * @return array|boolean
 	 */
-	public function GetGroupUsers($GroupId = 0)
+	public function GetGroupUsers($GroupId = 0, $TenantId = 0)
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::TenantAdmin);
 		
@@ -147,7 +147,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 		}
 		
 		$aFilters = [self::GetName() . '::GroupId' => [$GroupId, '=']];
-		return \Aurora\Modules\Core\Module::Decorator()->GetUserList(0, 0, 'PublicId', \Aurora\System\Enums\SortOrder::ASC, '', $aFilters);
+		return \Aurora\Modules\Core\Module::Decorator()->GetUsers($TenantId, 0, 0, 'PublicId', \Aurora\System\Enums\SortOrder::ASC, '', $aFilters);
 	}
 	
 	/**
@@ -214,7 +214,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 			throw new \Aurora\System\Exceptions\ApiException(\Aurora\System\Notifications::InvalidInputParameter);
 		}
 		
-		$oUser = \Aurora\Modules\Core\Module::Decorator()->GetUser($UserId);
+		$oUser = \Aurora\Modules\Core\Module::Decorator()->GetUserUnchecked($UserId);
 		if ($oUser instanceof \Aurora\Modules\Core\Classes\User)
 		{
 			$oUser->{self::GetName() . '::GroupId'} = (int) $GroupId;

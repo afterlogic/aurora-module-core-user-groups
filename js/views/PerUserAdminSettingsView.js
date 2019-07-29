@@ -48,9 +48,8 @@ function CPerUserAdminSettingsView()
 	}, this);
 	
 	App.subscribeEvent('ReceiveAjaxResponse::after', _.bind(function (oParams) {
-		if (oParams.Request.Module === 'AdminPanelWebclient'
-			&& oParams.Request.Method === 'GetEntity'
-			&& oParams.Request.Parameters.Type === 'User'
+		if (oParams.Request.Module === 'Core'
+			&& oParams.Request.Method === 'GetUser'
 			&& oParams.Request.Parameters.Id === this.iUserId
 			&& oParams.Response.Result
 			&& oParams.Response.Result.EntityId === this.iUserId)
