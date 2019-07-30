@@ -147,7 +147,8 @@ class Module extends \Aurora\System\Module\AbstractModule
 		}
 		
 		$aFilters = [self::GetName() . '::GroupId' => [$GroupId, '=']];
-		return \Aurora\Modules\Core\Module::Decorator()->GetUsers($TenantId, 0, 0, 'PublicId', \Aurora\System\Enums\SortOrder::ASC, '', $aFilters);
+		$aUsers = \Aurora\Modules\Core\Module::Decorator()->GetUsers($TenantId, 0, 0, 'PublicId', \Aurora\System\Enums\SortOrder::ASC, '', $aFilters);
+		return is_array($aUsers) && is_array($aUsers['Items']) ? $aUsers['Items'] : [];
 	}
 	
 	/**
