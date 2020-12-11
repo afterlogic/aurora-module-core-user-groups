@@ -40,20 +40,9 @@ class Manager extends \Aurora\System\Managers\AbstractManager
 	 */
 	public function createGroup($iTenantId, $sName)
 	{
-		$aFilters = [
-			'TenantId' => [$iTenantId, '='],
-			'Name' => [$sName, '=']
-		];
+		$oGroupWithSameName = $this->getGroupByName($iTenantId, $sName);
 		
-		$aGroups = $this->oEavManager->getEntities(
-			\Aurora\Modules\CoreUserGroups\Classes\Group::class,
-			array(),
-			0,
-			0,
-			$aFilters
-		);
-		
-		if (count($aGroups))
+		if ($oGroupWithSameName !== false)
 		{
 			throw new \Aurora\Modules\CoreUserGroups\Exceptions\Exception(\Aurora\Modules\CoreUserGroups\Enums\ErrorCodes::GroupAlreadyExists);
 		}
@@ -85,6 +74,30 @@ class Manager extends \Aurora\System\Managers\AbstractManager
 	public function getGroup($iGroupId)
 	{
 		return $this->oEavManager->getEntity($iGroupId, \Aurora\Modules\CoreUserGroups\Classes\Group::class);
+	}
+	
+	/**
+	 * Obtains group with specified name and tenant identifier.
+	 * @param int $iTenantId Tenant identifier.
+	 * @param string $sGroupName Group name is unique within one tenant.
+	 * @return \Aurora\Modules\CoreUserGroups\Classes\Group|boolean
+	 */
+	public function getGroupByName($iTenantId, $sGroupName)
+	{
+		$aFilters = [
+			'TenantId' => [$iTenantId, '='],
+			'Name' => [$sGroupName, '=']
+		];
+		
+		$aGroups = $this->oEavManager->getEntities(
+			\Aurora\Modules\CoreUserGroups\Classes\Group::class,
+			array(),
+			0,
+			0,
+			$aFilters
+		);
+		
+		return count($aGroups) > 0 ? $aGroups[0] : false;
 	}
 	
 	/**

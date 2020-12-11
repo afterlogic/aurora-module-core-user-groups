@@ -203,7 +203,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 	}
 	
 	/**
-	 * Saves list of groups for specified user.
+	 * Saves group for specified user.
 	 * @param int $UserId User identifier.
 	 * @param array $GroupId Group identifier.
 	 * @return boolean
@@ -225,6 +225,29 @@ class Module extends \Aurora\System\Module\AbstractModule
 		}
 		
 		return true;
+	}
+	
+	/**
+	 * Saves group for specified user.
+	 * @param int $UserId User identifier.
+	 * @param int $TenantId Tenant identifier.
+	 * @param string $GroupName Group name is unique within one tenant.
+	 * @return array|boolean
+	 */
+	public function UpdateUserGroupByName($UserId, $TenantId, $GroupName)
+	{
+		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::TenantAdmin);
+		
+		$oGroup = $this->getGroupsManager()->getGroupByName($TenantId, $GroupName);
+		
+		if ($oGroup instanceof Classes\Group)
+		{
+			return self::Decorator()->UpdateUserGroup($UserId, $oGroup->EntityId);
+		}
+		else
+		{
+			throw new \Aurora\System\Exceptions\ApiException(\Aurora\System\Notifications::InvalidInputParameter);
+		}
 	}
 	
 	/**
