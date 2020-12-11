@@ -32,6 +32,14 @@ class Group extends \Aurora\System\EAV\Entity
 	{
 		$aResponse = parent::toResponseArray();
 		$aResponse['Id'] = $this->EntityId;
+		
+		$aArgs = ['Group' => $this];
+		\Aurora\System\Api::GetModule('Core')->broadcastEvent(
+			'CoreUserGroups::Group::ToResponseArray',
+			$aArgs,
+			$aResponse
+		);
+		
 		return $aResponse;
 	}
 }
