@@ -139,18 +139,4 @@ class Manager extends \Aurora\System\Managers\AbstractManager
 		
 		return true;
 	}
-	
-	/**
-	 * Updates group.
-	 * @param int $iGroupId Group identifier.
-	 * @param int $sName New group name.
-	 * @return boolean
-	 */
-	public function updateGroup($iGroupId, $sName)
-	{
-		$oGroup = $this->getGroup($iGroupId);
-		$oGroup->Name = $sName;
-		$oGroup->saveAttribute('Name');
-		return true;
-	}
 }

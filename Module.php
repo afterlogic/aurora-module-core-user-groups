@@ -226,22 +226,22 @@ class Module extends \Aurora\System\Module\AbstractModule
 	
 	/**
 	 * Updates user group.
-	 * @param array $Data Group data.
+	 * @param int $Id
 	 * @return boolean
 	 * @throws \Aurora\System\Exceptions\ApiException
 	 */
-	public function UpdateGroup($Data = [])
+	public function UpdateGroup($Id = 0)
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::TenantAdmin);
 		
-		$iGroupId = $Data['Id'];
-		$sName = $Data['Name'];
-		if ($iGroupId === 0 || $sName === '')
+		if ($Id === 0)
 		{
 			throw new \Aurora\System\Exceptions\ApiException(\Aurora\System\Notifications::InvalidInputParameter);
 		}
 		
-		return $this->getGroupsManager()->updateGroup($iGroupId, $sName);
+		// Name cannot be changed anymore
+		// Some extended props can be changed by subscribers
+		return true;
 	}
 	
 	/**
