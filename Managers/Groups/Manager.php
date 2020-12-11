@@ -10,7 +10,7 @@ namespace Aurora\Modules\CoreUserGroups\Managers\Groups;
 /**
  * @license https://www.gnu.org/licenses/agpl-3.0.html AGPL-3.0
  * @license https://afterlogic.com/products/common-licensing Afterlogic Software License
- * @copyright Copyright (c) 2019, Afterlogic Corp.
+ * @copyright Copyright (c) 2020, Afterlogic Corp.
  *
  * @package CoreUserGroups
  * @subpackage Managers
@@ -40,6 +40,24 @@ class Manager extends \Aurora\System\Managers\AbstractManager
 	 */
 	public function createGroup($iTenantId, $sName)
 	{
+		$aFilters = [
+			'TenantId' => [$iTenantId, '='],
+			'Name' => [$sName, '=']
+		];
+		
+		$aGroups = $this->oEavManager->getEntities(
+			\Aurora\Modules\CoreUserGroups\Classes\Group::class,
+			array(),
+			0,
+			0,
+			$aFilters
+		);
+		
+		if (count($aGroups))
+		{
+			throw new \Aurora\Modules\CoreUserGroups\Exceptions\Exception(\Aurora\Modules\CoreUserGroups\Enums\ErrorCodes::GroupAlreadyExists);
+		}
+		
 		$oGroup = new \Aurora\Modules\CoreUserGroups\Classes\Group(\Aurora\Modules\CoreUserGroups\Module::GetName());
 		$oGroup->TenantId = $iTenantId;
 		$oGroup->Name = $sName;

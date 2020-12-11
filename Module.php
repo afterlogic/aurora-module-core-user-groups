@@ -12,7 +12,7 @@ namespace Aurora\Modules\CoreUserGroups;
  * 
  * @license https://www.gnu.org/licenses/agpl-3.0.html AGPL-3.0
  * @license https://afterlogic.com/products/common-licensing Afterlogic Software License
- * @copyright Copyright (c) 2019, Afterlogic Corp.
+ * @copyright Copyright (c) 2020, Afterlogic Corp.
  *
  * @package Modules
  */
@@ -25,6 +25,9 @@ class Module extends \Aurora\System\Module\AbstractModule
 			
 	public function init()
 	{
+		$this->aErrors = [
+			Enums\ErrorCodes::GroupAlreadyExists => $this->i18N('ERROR_GROUP_ALREADY_EXISTS'),
+		];
 		$this->subscribeEvent('Core::DeleteTenant::after', array($this, 'onAfterDeleteTenant'));
 		
 		\Aurora\Modules\Core\Classes\User::extend(
