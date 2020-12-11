@@ -102,21 +102,20 @@ class Module extends \Aurora\System\Module\AbstractModule
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::TenantAdmin);
 		
-		function GetEntityId($oUser)
-		{
-			return $oUser->EntityId;
-		}
 		$aUsersIds = [];
 		foreach ($IdList as $iGroupId)
 		{
 			if ($this->getGroupsManager()->deleteGroup($iGroupId))
 			{
 				$aUsers = self::Decorator()->GetGroupUsers($iGroupId);
-				$aGroupUsersIds = array_map('GetEntityId', $aUsers);
+				$aGroupUsersIds = array_map(function ($oUser) {
+					return $oUser['Id'];
+				}, $aUsers);
 				$aUsersIds = array_unique(array_merge($aUsersIds, $aGroupUsersIds));
 			}
 		}
 		
+		// Subscribers need this result
 		return $aUsersIds;
 	}
 	
