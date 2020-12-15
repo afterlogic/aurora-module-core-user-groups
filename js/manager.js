@@ -56,19 +56,24 @@ module.exports = function (oAppData) {
 						Type: 'User',
 						AdditionalButtons: [{'ButtonView': require('modules/%ModuleName%/js/views/AddToGroupButtonView.js')}]
 					}]);
-					ModulesManager.run('AdminPanelWebclient', 'registerAdminPanelTab', [
-						function(resolve) {
-							require.ensure(
-								['modules/%ModuleName%/js/views/PerUserAdminSettingsView.js'],
-								function() {
-									resolve(require('modules/%ModuleName%/js/views/PerUserAdminSettingsView.js'));
-								},
-								"admin-bundle"
-							);
-						},
-						Settings.HashModuleName + '-user',
-						TextUtils.i18n('%MODULENAME%/LABEL_SETTINGS_TAB_USERGROUPS')
-					]);
+				
+					// CoreUserGroupsLimits reassigns PerUserAdminSettingsView screen
+					if (!ModulesManager.isModuleEnabled('CoreUserGroupsLimits'))
+					{
+						ModulesManager.run('AdminPanelWebclient', 'registerAdminPanelTab', [
+							function(resolve) {
+								require.ensure(
+									['modules/%ModuleName%/js/views/PerUserAdminSettingsView.js'],
+									function() {
+										resolve(require('modules/%ModuleName%/js/views/PerUserAdminSettingsView.js'));
+									},
+									"admin-bundle"
+								);
+							},
+							Settings.HashModuleName + '-user',
+							TextUtils.i18n('%MODULENAME%/LABEL_SETTINGS_TAB_USERGROUPS')
+						]);
+					}
 				}
 			};
 		}

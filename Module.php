@@ -87,12 +87,12 @@ class Module extends \Aurora\System\Module\AbstractModule
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::TenantAdmin);
 		
-		$oTenant = \Aurora\Modules\Core\Module::Decorator()->GetTenantUnchecked($TenantId);
-		if (!$oTenant || $Name === '')
+		if ($Name === '')
 		{
 			throw new \Aurora\System\Exceptions\ApiException(\Aurora\System\Notifications::InvalidInputParameter);
 		}
 		
+		// If $TenantId is 0, the new group is custom and belongs to some particular user.
 		return $this->getGroupsManager()->createGroup($TenantId, $Name);
 	}
 	

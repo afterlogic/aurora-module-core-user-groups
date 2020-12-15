@@ -40,7 +40,8 @@ class Manager extends \Aurora\System\Managers\AbstractManager
 	 */
 	public function createGroup($iTenantId, $sName)
 	{
-		$oGroupWithSameName = $this->getGroupByName($iTenantId, $sName);
+		// Groups without tenant are custom groups and they can have the same name
+		$oGroupWithSameName = ($iTenantId !== 0) ? $this->getGroupByName($iTenantId, $sName) : false;
 		
 		if ($oGroupWithSameName !== false)
 		{
