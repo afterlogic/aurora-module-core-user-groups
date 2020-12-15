@@ -133,7 +133,7 @@ class Manager extends \Aurora\System\Managers\AbstractManager
 			'TenantId' => [$iTenantId, '='],
 			'Name' => ['%' . $sSearch . '%', 'LIKE']
 		];
-		$sOrderBy = 'Name';
+		$sOrderBy = '';
 		$iOrderType = \Aurora\System\Enums\SortOrder::ASC;
 		
 		return $this->oEavManager->getEntities(
