@@ -26,6 +26,7 @@ class Group extends \Aurora\System\EAV\Entity
 	protected $aStaticMap = array(
 		'TenantId' => array('int', 0, true),
 		'Name' => array('string', '', true),
+		'IsDefault' => array('bool', false, true),
 	);
 
 	public function toResponseArray()

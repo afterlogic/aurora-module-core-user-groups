@@ -135,6 +135,19 @@ class Module extends \Aurora\System\Module\AbstractModule
 	}
 	
 	/**
+	 * Obtains default group for specified tenant.
+	 * If the tenant does not have a default group, the default is set to the first group.
+	 * @param int $TenantId
+	 * @return object|false
+	 */
+	public function GetDefaultGroup($TenantId)
+	{
+		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
+		
+		return $this->getGroupsManager()->getDefaultGroup($TenantId);
+	}
+	
+	/**
 	 * Obtains list of users for specified group.
 	 * @param int $GroupId Group identifier.
 	 * @return array|boolean
@@ -268,6 +281,25 @@ class Module extends \Aurora\System\Module\AbstractModule
 		// Name cannot be changed anymore
 		// Some extended props can be changed by subscribers
 		return true;
+	}
+	
+	/**
+	 * Updates default user group.
+	 * @param int $TenantId
+	 * @param int $DefaultGroupId
+	 * @return boolean
+	 * @throws \Aurora\System\Exceptions\ApiException
+	 */
+	public function ChangeDefaultGroup($TenantId = 0, $DefaultGroupId = 0)
+	{
+		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::TenantAdmin);
+		
+		if ($TenantId === 0 || $DefaultGroupId === 0)
+		{
+			throw new \Aurora\System\Exceptions\ApiException(\Aurora\System\Notifications::InvalidInputParameter);
+		}
+		
+		return $this->getGroupsManager()->changeDefaultGroup($TenantId, $DefaultGroupId);
 	}
 	
 	/**

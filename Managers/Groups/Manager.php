@@ -58,6 +58,31 @@ class Manager extends \Aurora\System\Managers\AbstractManager
 	}
 	
 	/**
+	 * Changes default user group.
+	 * @param int $iTenantId
+	 * @param int $iDefaultGroupId Group identifier.
+	 * @return array
+	 */
+	public function changeDefaultGroup($iTenantId, $iDefaultGroupId)
+	{
+		$aGroups = $this->getGroups($iTenantId);
+		foreach($aGroups as $oGroup)
+		{
+			if ($oGroup->EntityId === $iDefaultGroupId && !$oGroup->IsDefault)
+			{
+				$oGroup->IsDefault = true;
+				$oGroup->save();
+			}
+			if ($oGroup->EntityId !== $iDefaultGroupId && $oGroup->IsDefault)
+			{
+				$oGroup->IsDefault = false;
+				$oGroup->save();
+			}
+		}
+		return true;
+	}
+	
+	/**
 	 * Deletes group.
 	 * @param int $iGroupId Group identifier.
 	 * @return array
@@ -65,6 +90,43 @@ class Manager extends \Aurora\System\Managers\AbstractManager
 	public function deleteGroup($iGroupId)
 	{
 		return $this->oEavManager->deleteEntities([$iGroupId]);
+	}
+	
+	/**
+	 * Obtains default group for specified tenant.
+	 * If the tenant does not have a default group, the default is set to the first group.
+	 * @param int $iTenantId
+	 * @return object|false
+	 */
+	public function getDefaultGroup($iTenantId)
+	{
+		$aFilters = [
+			'TenantId' => [$iTenantId, '='],
+			'IsDefault' => [true, '=']
+		];
+		$oDefaultGroup = (new \Aurora\System\EAV\Query())
+			->select()
+			->whereType(\Aurora\Modules\CoreUserGroups\Classes\Group::class)
+			->where($aFilters)
+			->one()
+			->exec();
+		
+		if (!($oDefaultGroup instanceof \Aurora\Modules\CoreUserGroups\Classes\Group))
+		{
+			$aFilters = [
+				'TenantId' => [$iTenantId, '=']
+			];
+			$oDefaultGroup = (new \Aurora\System\EAV\Query())
+				->select()
+				->whereType(\Aurora\Modules\CoreUserGroups\Classes\Group::class)
+				->where($aFilters)
+				->one()
+				->exec();
+			$oDefaultGroup->IsDefault = true;
+			$oDefaultGroup->save();
+		}
+		
+		return $oDefaultGroup;
 	}
 	
 	/**
@@ -121,6 +183,7 @@ class Manager extends \Aurora\System\Managers\AbstractManager
 	
 	/**
 	 * Obtains all groups for specified tenant.
+	 * Checks if the tenant has a default group. If not, the default is set to the first group.
 	 * @param int $iTenantId Tenant identifier.
 	 * @param int $iOffset Offset of the list.
 	 * @param int $iLimit Limit of the list.
@@ -136,7 +199,7 @@ class Manager extends \Aurora\System\Managers\AbstractManager
 		$sOrderBy = '';
 		$iOrderType = \Aurora\System\Enums\SortOrder::ASC;
 		
-		return $this->oEavManager->getEntities(
+		$aGroups = $this->oEavManager->getEntities(
 			\Aurora\Modules\CoreUserGroups\Classes\Group::class,
 			array(),
 			$iOffset,
@@ -145,6 +208,27 @@ class Manager extends \Aurora\System\Managers\AbstractManager
 			$sOrderBy,
 			$iOrderType
 		);
+		
+		if (count($aGroups))
+		{
+			$oDefaultGroup = null;
+			foreach($aGroups as $oGroup)
+			{
+				if ($oGroup->IsDefault)
+				{
+					$oDefaultGroup = $oGroup;
+					break;
+				}
+			}
+			if ($oDefaultGroup === null)
+			{
+				$oDefaultGroup = $aGroups[0];
+				$oDefaultGroup->IsDefault = true;
+				$oDefaultGroup->save();
+			}
+		}
+		
+		return $aGroups;
 	}
 	
 	/**
