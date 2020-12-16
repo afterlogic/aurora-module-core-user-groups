@@ -27,6 +27,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 	{
 		$this->aErrors = [
 			Enums\ErrorCodes::GroupAlreadyExists => $this->i18N('ERROR_GROUP_ALREADY_EXISTS'),
+			Enums\ErrorCodes::CannotDeleteDefaultGroup => $this->i18N('ERROR_CANNOT_DELETE_DEFAULT_GROUP'),
 		];
 		$this->subscribeEvent('Core::DeleteTenant::after', array($this, 'onAfterDeleteTenant'));
 		

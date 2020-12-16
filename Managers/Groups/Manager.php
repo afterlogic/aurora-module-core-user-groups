@@ -89,6 +89,11 @@ class Manager extends \Aurora\System\Managers\AbstractManager
 	 */
 	public function deleteGroup($iGroupId)
 	{
+		$oGroup = $this->getGroup($iGroupId);
+		if ($oGroup instanceof \Aurora\Modules\CoreUserGroups\Classes\Group && $oGroup->IsDefault)
+		{
+			throw new \Aurora\Modules\CoreUserGroups\Exceptions\Exception(\Aurora\Modules\CoreUserGroups\Enums\ErrorCodes::CannotDeleteDefaultGroup);
+		}
 		return $this->oEavManager->deleteEntities([$iGroupId]);
 	}
 	
