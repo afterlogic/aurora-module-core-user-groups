@@ -82,7 +82,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 	 * Creates user group.
 	 * @param int $TenantId Tenant identifier.
 	 * @param string $Name Group name.
-	 * @return boolean
+	 * @return int|false New group identifier
 	 * @throws \Aurora\System\Exceptions\ApiException
 	 */
 	public function CreateGroup($TenantId = 0, $Name = '')
@@ -120,10 +120,13 @@ class Module extends \Aurora\System\Module\AbstractModule
 			}
 		}
 
-		$oDefaultGroup = $TenantId !== 0 ? self::Decorator()->GetDefaultGroup($TenantId) : null;
-		if ($oDefaultGroup instanceof \Aurora\Modules\CoreUserGroups\Classes\Group)
+		if (!empty($aUsersIds))
 		{
-			self::Decorator()->AddToGroup($oDefaultGroup->EntityId, $aUsersIds);
+			$oDefaultGroup = $TenantId !== 0 ? self::Decorator()->GetDefaultGroup($TenantId) : null;
+			if ($oDefaultGroup instanceof \Aurora\Modules\CoreUserGroups\Classes\Group)
+			{
+				self::Decorator()->AddToGroup($oDefaultGroup->EntityId, $aUsersIds);
+			}
 		}
 		
 		return true; // If something goes wrong, an exception will be thrown.
