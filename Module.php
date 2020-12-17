@@ -102,7 +102,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 	 * @param int $IdList List of Group identifiers.
 	 * @return array
 	 */
-	public function DeleteGroups($IdList)
+	public function DeleteGroups($TenantId, $IdList)
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::TenantAdmin);
 		
@@ -118,9 +118,14 @@ class Module extends \Aurora\System\Module\AbstractModule
 				$aUsersIds = array_unique(array_merge($aUsersIds, $aGroupUsersIds));
 			}
 		}
+
+		$oDefaultGroup = $TenantId !== 0 ? self::Decorator()->GetDefaultGroup($TenantId) : null;
+		if ($oDefaultGroup instanceof \Aurora\Modules\CoreUserGroups\Classes\Group)
+		{
+			self::Decorator()->AddToGroup($oDefaultGroup->EntityId, $aUsersIds);
+		}
 		
-		// Subscribers need this result
-		return $aUsersIds;
+		return true; // If something goes wrong, an exception will be thrown.
 	}
 	
 	/**
