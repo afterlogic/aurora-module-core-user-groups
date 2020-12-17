@@ -4,11 +4,13 @@ var
 	_ = require('underscore'),
 	ko = require('knockout'),
 	
+	TextUtils = require('%PathToCoreWebclientModule%/js/utils/Text.js'),
 	Types = require('%PathToCoreWebclientModule%/js/utils/Types.js'),
 	
 	Ajax = require('%PathToCoreWebclientModule%/js/Ajax.js'),
 	App = require('%PathToCoreWebclientModule%/js/App.js'),
 	ModulesManager = require('%PathToCoreWebclientModule%/js/ModulesManager.js'),
+	Screens = require('%PathToCoreWebclientModule%/js/Screens.js'),
 	
 	Settings = require('modules/%ModuleName%/js/Settings.js')
 ;
@@ -20,6 +22,15 @@ function CCache()
 {
 	this.selectedTenantId = ModulesManager.run('AdminPanelWebclient', 'getKoSelectedTenantId');
 	this.groupsByTenants = ko.observable({});
+	if (_.isFunction(this.selectedTenantId))
+	{
+		this.selectedTenantId.subscribe(function () {
+			if (typeof this.groupsByTenants()[this.selectedTenantId()] === 'undefined')
+			{
+				Ajax.send(Settings.UserGroupsServerModuleName, 'GetGroups', { TenantId: this.selectedTenantId() });
+			}
+		}, this);
+	}
 	this.groups = ko.computed(function () {
 		var aGroups = _.isFunction(this.selectedTenantId) ? this.groupsByTenants()[this.selectedTenantId()] : [];
 		return _.isArray(aGroups) ? aGroups : [];
@@ -51,6 +62,46 @@ CCache.prototype.getGroup = function (iId)
 	return _.find(this.groups(), function (oGroup) {
 		return oGroup.Id === iId;
 	});
+};
+
+/**
+ * Only Cache object knows if groups are empty or not received yet.
+ * So error will be shown as soon as groups will be received from server if they are empty.
+ * @returns Boolean
+ */
+CCache.prototype.showErrorIfGroupsEmpty = function ()
+{
+	var
+		bGroupsEmptyOrUndefined = true,
+		fShowErrorIfGroupsEmpty = function () {
+			if (this.groups().length === 0)
+			{
+				Screens.showError(TextUtils.i18n('%MODULENAME%/ERROR_ADD_GROUP_FIRST'));
+			}
+			else
+			{
+				bGroupsEmptyOrUndefined = false;
+			}
+		}.bind(this)
+	;
+	
+	if (_.isFunction(this.selectedTenantId))
+	{
+		if (typeof this.groupsByTenants()[this.selectedTenantId()] === 'undefined')
+		{
+			var fSubscription = this.groupsByTenants.subscribe(function () {
+				fShowErrorIfGroupsEmpty();
+				fSubscription.dispose();
+				fSubscription = undefined;
+			});
+		}
+		else
+		{
+			fShowErrorIfGroupsEmpty();
+		}
+	}
+	
+	return bGroupsEmptyOrUndefined;
 };
 
 /**

@@ -2,6 +2,8 @@
 
 module.exports = function (oAppData) {
 	var
+		_ = require('underscore'),
+		
 		App = require('%PathToCoreWebclientModule%/js/App.js'),
 				
 		TextUtils = require('%PathToCoreWebclientModule%/js/utils/Text.js'),
@@ -54,7 +56,28 @@ module.exports = function (oAppData) {
 					}]);
 					ModulesManager.run('AdminPanelWebclient', 'changeAdminPanelEntityData', [{
 						Type: 'User',
-						AdditionalButtons: [{'ButtonView': require('modules/%ModuleName%/js/views/AddToGroupButtonView.js')}]
+						AdditionalButtons: [{'ButtonView': require('modules/%ModuleName%/js/views/AddToGroupButtonView.js')}],
+						Filters: [
+							{
+								sEntity: 'Group',
+								sField: 'GroupId',
+								mList: function () {
+									var aGroups = _.map(Cache.groups(), function (oGroup) {
+										return {
+											text: oGroup.Name,
+											value: oGroup.Id
+										};
+									});
+									aGroups.push({
+										text: TextUtils.i18n('%MODULENAME%/LABEL_ALL_CUSTOM_GROUPS'),
+										value: -2
+									});
+									return aGroups;
+								},
+								sAllText: TextUtils.i18n('%MODULENAME%/LABEL_ALL_GROUPS'),
+								sNotInAnyText: TextUtils.i18n('%MODULENAME%/LABEL_NOT_IN_ANY_GROUP')
+							}
+						]
 					}]);
 				
 					// CoreUserGroupsLimits reassigns PerUserAdminSettingsView screen

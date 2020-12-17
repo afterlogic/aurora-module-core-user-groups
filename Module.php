@@ -30,6 +30,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 			Enums\ErrorCodes::CannotDeleteDefaultGroup => $this->i18N('ERROR_CANNOT_DELETE_DEFAULT_GROUP'),
 		];
 		$this->subscribeEvent('Core::DeleteTenant::after', array($this, 'onAfterDeleteTenant'));
+		$this->subscribeEvent('Core::GetUsers::before', array($this, 'onBeforeGetUsers'));
 		
 		\Aurora\Modules\Core\Classes\User::extend(
 			self::GetName(),
@@ -320,6 +321,55 @@ class Module extends \Aurora\System\Module\AbstractModule
 		foreach ($aGroups as $oGropup)
 		{
 			$this->getGroupsManager()->deleteGroup($oGropup->EntityId);
+		}
+	}
+	
+	/**
+	 * Prepares filters to get users from the specified group(s).
+	 * @param array $aArgs
+	 * @param mixed $mResult
+	 */
+	public function onBeforeGetUsers(&$aArgs, &$mResult)
+	{
+		// -2: in Custom groups
+		// -1: all group, filters are not needed
+		// 0: not in any group
+		// > 0: some particular group
+		if (isset($aArgs['GroupId']) && $aArgs['GroupId'] !== -1)
+		{
+			if ($aArgs['GroupId'] === -2)
+			{
+				$aGroups = \Aurora\Modules\CoreUserGroups\Module::Decorator()->GetGroups($aArgs['TenantId']);
+				$aGroupsIds = array_map(function ($oGroup) {
+					return $oGroup->EntityId;
+				}, $aGroups['Items']);
+				$aGroupsIds[] = 0;
+				if (isset($aArgs['Filters']) && is_array($aArgs['Filters']) && count($aArgs['Filters']) > 0)
+				{
+					$aArgs['Filters']['CoreUserGroups::GroupId'] = [$aGroupsIds, 'not in'];
+					$aArgs['Filters'] = [
+						'$AND' => $aArgs['Filters']
+					];
+				}
+				else
+				{
+					$aArgs['Filters'] = ['CoreUserGroups::GroupId' => [$aGroupsIds, 'not in']];
+				}
+			}
+			else
+			{
+				if (isset($aArgs['Filters']) && is_array($aArgs['Filters']) && count($aArgs['Filters']) > 0)
+				{
+					$aArgs['Filters']['CoreUserGroups::GroupId'] = [$aArgs['GroupId'], '='];
+					$aArgs['Filters'] = [
+						'$AND' => $aArgs['Filters']
+					];
+				}
+				else
+				{
+					$aArgs['Filters'] = ['CoreUserGroups::GroupId' => [$aArgs['GroupId'], '=']];
+				}
+			}
 		}
 	}
 }
