@@ -31,6 +31,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 		];
 		$this->subscribeEvent('Core::DeleteTenant::after', array($this, 'onAfterDeleteTenant'));
 		$this->subscribeEvent('Core::GetUsers::before', array($this, 'onBeforeGetUsers'));
+		$this->subscribeEvent('Core::CreateUser::after', array($this, 'onAfterCreateUser'));
 		
 		\Aurora\Modules\Core\Classes\User::extend(
 			self::GetName(),
@@ -67,15 +68,10 @@ class Module extends \Aurora\System\Module\AbstractModule
 		
 		foreach ($UsersIds as $iUserId)
 		{
-			$oUser = \Aurora\Modules\Core\Module::Decorator()->GetUserUnchecked($iUserId);
-			if ($oUser instanceof \Aurora\Modules\Core\Classes\User)
-			{
-				$oUser->{self::GetName() . '::GroupId'} = (int) $GroupId;
-				$oUser->saveAttribute(self::GetName() . '::GroupId');
-			}
+			self::Decorator()->UpdateUserGroup($iUserId, $GroupId);
 		}
 		
-		return true;
+		return true; // If something goes wrong, an exception will be thrown.
 	}
 	
 	/**
@@ -247,7 +243,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 			$oUser->saveAttribute(self::GetName() . '::GroupId');
 		}
 		
-		return true;
+		return true; // If something goes wrong, an exception will be thrown.
 	}
 	
 	/**
@@ -290,7 +286,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 		
 		// Name cannot be changed anymore
 		// Some extended props can be changed by subscribers
-		return true;
+		return true; // If something goes wrong, an exception will be thrown.
 	}
 	
 	/**
@@ -372,6 +368,22 @@ class Module extends \Aurora\System\Module\AbstractModule
 				{
 					$aArgs['Filters'] = ['CoreUserGroups::GroupId' => [$aArgs['GroupId'], '=']];
 				}
+			}
+		}
+	}
+
+	/**
+	 * @param array $aArgs
+	 * @param mixed $mResult
+	 */
+	public function onAfterCreateUser($aArgs, &$mResult)
+	{
+		if ($mResult)
+		{
+			$oDefaultGroup = self::Decorator()->GetDefaultGroup($aArgs['TenantId']);
+			if ($oDefaultGroup instanceof \Aurora\Modules\CoreUserGroups\Classes\Group)
+			{
+				self::Decorator()->UpdateUserGroup($mResult, $oDefaultGroup->EntityId);
 			}
 		}
 	}
