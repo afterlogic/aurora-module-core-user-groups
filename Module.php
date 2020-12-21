@@ -35,7 +35,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 		\Aurora\Modules\Core\Classes\User::extend(
 			self::GetName(),
 			[
-				'GroupId' => array('int', 0),
+				'GroupId' => array('int', 0, true),
 			]
 		);		
 	}
