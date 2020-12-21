@@ -127,8 +127,11 @@ class Manager extends \Aurora\System\Managers\AbstractManager
 				->where($aFilters)
 				->one()
 				->exec();
-			$oDefaultGroup->IsDefault = true;
-			$oDefaultGroup->save();
+			if ($oDefaultGroup instanceof \Aurora\Modules\CoreUserGroups\Classes\Group)
+			{
+				$oDefaultGroup->IsDefault = true;
+				$oDefaultGroup->save();
+			}
 		}
 		
 		return $oDefaultGroup;
