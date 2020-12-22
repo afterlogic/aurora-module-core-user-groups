@@ -74,8 +74,8 @@ module.exports = function (oAppData) {
 									});
 									return aGroups;
 								},
-								sAllText: TextUtils.i18n('%MODULENAME%/LABEL_ALL_GROUPS'),
-								sNotInAnyText: TextUtils.i18n('%MODULENAME%/LABEL_NOT_IN_ANY_GROUP')
+								sAllText: TextUtils.i18n('%MODULENAME%/LABEL_ALL_GROUPS')
+//								sNotInAnyText: TextUtils.i18n('%MODULENAME%/LABEL_NOT_IN_ANY_GROUP')
 							}
 						]
 					}]);
