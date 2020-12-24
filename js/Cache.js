@@ -27,7 +27,7 @@ function CCache()
 		this.selectedTenantId.subscribe(function () {
 			if (typeof this.groupsByTenants()[this.selectedTenantId()] === 'undefined')
 			{
-				Ajax.send(Settings.UserGroupsServerModuleName, 'GetGroups', { TenantId: this.selectedTenantId() });
+				Ajax.send(Settings.ServerModuleName, 'GetGroups', { TenantId: this.selectedTenantId() });
 			}
 		}, this);
 	}
