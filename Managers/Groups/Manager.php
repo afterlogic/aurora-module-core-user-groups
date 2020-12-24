@@ -105,6 +105,11 @@ class Manager extends \Aurora\System\Managers\AbstractManager
 	 */
 	public function getDefaultGroup($iTenantId)
 	{
+		if ($iTenantId === 0)
+		{
+			return null;
+		}
+		
 		$aFilters = [
 			'TenantId' => [$iTenantId, '='],
 			'IsDefault' => [true, '=']
@@ -217,8 +222,9 @@ class Manager extends \Aurora\System\Managers\AbstractManager
 			$iOrderType
 		);
 		
-		if (count($aGroups))
+		if (count($aGroups) && $iTenantId > 0)
 		{
+			// The tenant must have at least one default group
 			$oDefaultGroup = null;
 			foreach($aGroups as $oGroup)
 			{
