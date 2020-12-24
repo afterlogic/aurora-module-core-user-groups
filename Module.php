@@ -243,7 +243,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 			$oUser->saveAttribute(self::GetName() . '::GroupId');
 		}
 		
-		return true; // If something goes wrong, an exception will be thrown.
+		return $oUser->{self::GetName() . '::GroupId'}; // If something goes wrong, an exception will be thrown.
 	}
 	
 	/**
