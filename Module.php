@@ -31,7 +31,8 @@ class Module extends \Aurora\System\Module\AbstractModule
 		];
 		$this->subscribeEvent('Core::DeleteTenant::after', array($this, 'onAfterDeleteTenant'));
 		$this->subscribeEvent('Core::GetUsers::before', array($this, 'onBeforeGetUsers'));
-		$this->subscribeEvent('Core::CreateUser::after', array($this, 'onAfterCreateUser'));
+		//temporary removed setting a default user group when a user is created
+		// $this->subscribeEvent('Core::CreateUser::after', array($this, 'onAfterCreateUser'));
 		
 		\Aurora\Modules\Core\Classes\User::extend(
 			self::GetName(),
