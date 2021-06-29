@@ -7,6 +7,9 @@
 
 namespace Aurora\Modules\CoreUserGroups;
 
+use Aurora\Modules\Core\Models\User;
+use Illuminate\Database\Eloquent\Builder;
+
 /**
  * Provides user groups.
  *
@@ -33,13 +36,6 @@ class Module extends \Aurora\System\Module\AbstractModule
 		$this->subscribeEvent('Core::GetUsers::before', array($this, 'onBeforeGetUsers'));
 		//temporary removed setting a default user group when a user is created
 		// $this->subscribeEvent('Core::CreateUser::after', array($this, 'onAfterCreateUser'));
-
-		\Aurora\Modules\Core\Classes\User::extend(
-			self::GetName(),
-			[
-				'GroupId' => array('int', 0, true),
-			]
-		);
 	}
 
 	public function getGroupsManager()
@@ -97,7 +93,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 
 	/**
 	 * Deletes Groups.
-	 * @param int $IdList List of Group identifiers.
+	 * @param array $IdList List of Group identifiers.
 	 * @return array
 	 */
 	public function DeleteGroups($TenantId, $IdList)
@@ -120,9 +116,9 @@ class Module extends \Aurora\System\Module\AbstractModule
 		if (!empty($aUsersIds))
 		{
 			$oDefaultGroup = $TenantId !== 0 ? self::Decorator()->GetDefaultGroup($TenantId) : null;
-			if ($oDefaultGroup instanceof \Aurora\Modules\CoreUserGroups\Classes\Group)
+			if ($oDefaultGroup instanceof Models\Group)
 			{
-				self::Decorator()->AddToGroup($oDefaultGroup->EntityId, $aUsersIds);
+				self::Decorator()->AddToGroup($oDefaultGroup->Id, $aUsersIds);
 			}
 		}
 
@@ -168,8 +164,8 @@ class Module extends \Aurora\System\Module\AbstractModule
 			throw new \Aurora\System\Exceptions\ApiException(\Aurora\System\Notifications::InvalidInputParameter);
 		}
 
-		$aFilters = [self::GetName() . '::GroupId' => [$GroupId, '=']];
-		$aUsers = \Aurora\Modules\Core\Module::Decorator()->GetUsers($TenantId, 0, 0, 'PublicId', \Aurora\System\Enums\SortOrder::ASC, '', $aFilters);
+		$oFilter = User::where('Properties->' . self::GetName() . '::GroupId', $GroupId);
+		$aUsers = \Aurora\Modules\Core\Module::Decorator()->GetUsers($TenantId, 0, 0, 'PublicId', \Aurora\System\Enums\SortOrder::ASC, '', $oFilter);
 		return is_array($aUsers) && is_array($aUsers['Items']) ? $aUsers['Items'] : [];
 	}
 
@@ -337,6 +333,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 		// > 0: some particular group
 		if (isset($aArgs['GroupId']) && $aArgs['GroupId'] !== -1)
 		{
+			$oFilter = ($aArgs['Filters'] instanceof Builder) ? $aArgs['Filters'] : User::query();
 			if ($aArgs['GroupId'] === -2)
 			{
 				$aGroups = \Aurora\Modules\CoreUserGroups\Module::Decorator()->GetGroups($aArgs['TenantId']);
@@ -344,31 +341,11 @@ class Module extends \Aurora\System\Module\AbstractModule
 					return $oGroup->EntityId;
 				}, $aGroups['Items']);
 				$aGroupsIds[] = 0;
-				if (isset($aArgs['Filters']) && is_array($aArgs['Filters']) && count($aArgs['Filters']) > 0)
-				{
-					$aArgs['Filters']['CoreUserGroups::GroupId'] = [$aGroupsIds, 'not in'];
-					$aArgs['Filters'] = [
-						'$AND' => $aArgs['Filters']
-					];
-				}
-				else
-				{
-					$aArgs['Filters'] = ['CoreUserGroups::GroupId' => [$aGroupsIds, 'not in']];
-				}
+				$aArgs['Filters'] = $oFilter->whereNoIn('Properties->CoreUserGroups::GroupId', $aGroupsIds);
 			}
 			else
 			{
-				if (isset($aArgs['Filters']) && is_array($aArgs['Filters']) && count($aArgs['Filters']) > 0)
-				{
-					$aArgs['Filters']['CoreUserGroups::GroupId'] = [$aArgs['GroupId'], '='];
-					$aArgs['Filters'] = [
-						'$AND' => $aArgs['Filters']
-					];
-				}
-				else
-				{
-					$aArgs['Filters'] = ['CoreUserGroups::GroupId' => [$aArgs['GroupId'], '=']];
-				}
+				$aArgs['Filters'] = $oFilter->where('Properties->CoreUserGroups::GroupId', $aArgs['GroupId']);
 			}
 		}
 	}
@@ -382,9 +359,9 @@ class Module extends \Aurora\System\Module\AbstractModule
 		if ($mResult)
 		{
 			$oDefaultGroup = self::Decorator()->GetDefaultGroup($aArgs['TenantId']);
-			if ($oDefaultGroup instanceof \Aurora\Modules\CoreUserGroups\Classes\Group)
+			if ($oDefaultGroup instanceof Models\Group)
 			{
-				self::Decorator()->UpdateUserGroup($mResult, $oDefaultGroup->EntityId);
+				self::Decorator()->UpdateUserGroup($mResult, $oDefaultGroup->Id);
 			}
 		}
 	}
