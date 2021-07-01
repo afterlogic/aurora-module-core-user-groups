@@ -114,10 +114,6 @@ class Manager extends \Aurora\System\Managers\AbstractManager
 			return null;
 		}
 
-		$aFilters = [
-			'TenantId' => [$iTenantId, '='],
-			'IsDefault' => [true, '=']
-		];
 		$oDefaultGroup = Group::firstWhere([['TenantId', '=', $iTenantId], ['IsDefault', '=', true]]);
 
 		if (!($oDefaultGroup instanceof Group))

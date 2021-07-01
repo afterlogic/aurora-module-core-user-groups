@@ -23,16 +23,18 @@ class Group extends \Aurora\System\Classes\Model
 {
 	public $GroupUsers = array();
 
-	protected $aStaticMap = array(
-		'TenantId' => array('int', 0, true),
-		'Name' => array('string', '', true),
-		'IsDefault' => array('bool', false, true),
-	);
+	protected $table = 'core_user_groups';
+
+	protected $fillable = [
+		'TenantId',
+		'Name',
+		'IsDefault'
+	];
 
 	public function toResponseArray()
 	{
 		$aResponse = parent::toResponseArray();
-		$aResponse['Id'] = $this->EntityId;
+		$aResponse['Id'] = $this->Id;
 
 		$aArgs = ['Group' => $this];
 		\Aurora\System\Api::GetModule('Core')->broadcastEvent(
