@@ -7,6 +7,12 @@
 
 namespace Aurora\Modules\CoreUserGroups\Managers\Groups;
 
+use Aurora\Modules\Core\Models\User;
+use Aurora\Modules\CoreUserGroups\Models\Group;
+use Aurora\Modules\CoreUserGroups\Exceptions\Exception;
+use Aurora\Modules\CoreUserGroups\Enums\ErrorCodes;
+use Aurora\Modules\CoreUserGroups\Module;
+
 /**
  * @license https://www.gnu.org/licenses/agpl-3.0.html AGPL-3.0
  * @license https://afterlogic.com/products/common-licensing Afterlogic Software License
@@ -18,18 +24,11 @@ namespace Aurora\Modules\CoreUserGroups\Managers\Groups;
 class Manager extends \Aurora\System\Managers\AbstractManager
 {
 	/**
-	 * @var \Aurora\System\Managers\Eav
-	 */
-	public $oEavManager = null;
-	
-	/**
 	 * @param \Aurora\System\Module\AbstractModule $oModule
 	 */
 	public function __construct(\Aurora\System\Module\AbstractModule $oModule = null)
 	{
 		parent::__construct($oModule);
-		
-		$this->oEavManager = \Aurora\System\Managers\Eav::getInstance();
 	}
 
 	/**
@@ -42,21 +41,21 @@ class Manager extends \Aurora\System\Managers\AbstractManager
 	{
 		// Groups without tenant are custom groups and they can have the same name
 		$oGroupWithSameName = ($iTenantId !== 0) ? $this->getGroupByName($iTenantId, $sName) : false;
-		
+
 		if ($oGroupWithSameName !== false)
 		{
-			throw new \Aurora\Modules\CoreUserGroups\Exceptions\Exception(\Aurora\Modules\CoreUserGroups\Enums\ErrorCodes::GroupAlreadyExists);
+			throw new Exception(ErrorCodes::GroupAlreadyExists);
 		}
-		
-		$oGroup = new \Aurora\Modules\CoreUserGroups\Classes\Group(\Aurora\Modules\CoreUserGroups\Module::GetName());
+
+		$oGroup = new Group();
 		$oGroup->TenantId = $iTenantId;
 		$oGroup->Name = $sName;
-		
-		$this->oEavManager->saveEntity($oGroup);
-		
-		return $oGroup->EntityId;
+
+		$oGroup->save();
+
+		return $oGroup->Id;
 	}
-	
+
 	/**
 	 * Changes default user group.
 	 * @param int $iTenantId
@@ -68,12 +67,12 @@ class Manager extends \Aurora\System\Managers\AbstractManager
 		$aGroups = $this->getGroups($iTenantId);
 		foreach($aGroups as $oGroup)
 		{
-			if ($oGroup->EntityId === $iDefaultGroupId && !$oGroup->IsDefault)
+			if ($oGroup->Id === $iDefaultGroupId && !$oGroup->IsDefault)
 			{
 				$oGroup->IsDefault = true;
 				$oGroup->save();
 			}
-			if ($oGroup->EntityId !== $iDefaultGroupId && $oGroup->IsDefault)
+			if ($oGroup->Id !== $iDefaultGroupId && $oGroup->IsDefault)
 			{
 				$oGroup->IsDefault = false;
 				$oGroup->save();
@@ -81,7 +80,7 @@ class Manager extends \Aurora\System\Managers\AbstractManager
 		}
 		return true;
 	}
-	
+
 	/**
 	 * Deletes group.
 	 * @param int $iGroupId Group identifier.
@@ -89,14 +88,19 @@ class Manager extends \Aurora\System\Managers\AbstractManager
 	 */
 	public function deleteGroup($iGroupId)
 	{
+		$mResult = false;
 		$oGroup = $this->getGroup($iGroupId);
-		if ($oGroup instanceof \Aurora\Modules\CoreUserGroups\Classes\Group && $oGroup->IsDefault)
+		if ($oGroup instanceof Group && $oGroup->IsDefault)
 		{
-			throw new \Aurora\Modules\CoreUserGroups\Exceptions\Exception(\Aurora\Modules\CoreUserGroups\Enums\ErrorCodes::CannotDeleteDefaultGroup);
+			if ($oGroup->IsDefault) {
+				throw new Exception(ErrorCodes::CannotDeleteDefaultGroup);
+			}
+			$mResult = $oGroup->delete();
 		}
-		return $this->oEavManager->deleteEntities([$iGroupId]);
+
+		return $mResult;
 	}
-	
+
 	/**
 	 * Obtains default group for specified tenant.
 	 * If the tenant does not have a default group, the default is set to the first group.
@@ -109,49 +113,32 @@ class Manager extends \Aurora\System\Managers\AbstractManager
 		{
 			return null;
 		}
-		
-		$aFilters = [
-			'TenantId' => [$iTenantId, '='],
-			'IsDefault' => [true, '=']
-		];
-		$oDefaultGroup = (new \Aurora\System\EAV\Query())
-			->select()
-			->whereType(\Aurora\Modules\CoreUserGroups\Classes\Group::class)
-			->where($aFilters)
-			->one()
-			->exec();
-		
-		if (!($oDefaultGroup instanceof \Aurora\Modules\CoreUserGroups\Classes\Group))
+
+		$oDefaultGroup = Group::firstWhere([['TenantId', '=', $iTenantId], ['IsDefault', '=', true]]);
+
+		if (!($oDefaultGroup instanceof Group))
 		{
-			$aFilters = [
-				'TenantId' => [$iTenantId, '=']
-			];
-			$oDefaultGroup = (new \Aurora\System\EAV\Query())
-				->select()
-				->whereType(\Aurora\Modules\CoreUserGroups\Classes\Group::class)
-				->where($aFilters)
-				->one()
-				->exec();
-			if ($oDefaultGroup instanceof \Aurora\Modules\CoreUserGroups\Classes\Group)
+			$oDefaultGroup = Group::firstWhere('TenantId', $iTenantId);
+			if ($oDefaultGroup instanceof Group)
 			{
 				$oDefaultGroup->IsDefault = true;
 				$oDefaultGroup->save();
 			}
 		}
-		
+
 		return $oDefaultGroup;
 	}
-	
+
 	/**
 	 * Obtains specified group.
 	 * @param int $iGroupId Group identifier.
-	 * @return \Aurora\Modules\CoreUserGroups\Classes\Group|boolean
+	 * @return \Aurora\Modules\CoreUserGroups\Models\Group|boolean
 	 */
 	public function getGroup($iGroupId)
 	{
-		return $this->oEavManager->getEntity($iGroupId, \Aurora\Modules\CoreUserGroups\Classes\Group::class);
+		return Group::find($iGroupId);
 	}
-	
+
 	/**
 	 * Obtains group with specified name and tenant identifier.
 	 * @param int $iTenantId Tenant identifier.
@@ -160,22 +147,9 @@ class Manager extends \Aurora\System\Managers\AbstractManager
 	 */
 	public function getGroupByName($iTenantId, $sGroupName)
 	{
-		$aFilters = [
-			'TenantId' => [$iTenantId, '='],
-			'Name' => [$sGroupName, '=']
-		];
-		
-		$aGroups = $this->oEavManager->getEntities(
-			\Aurora\Modules\CoreUserGroups\Classes\Group::class,
-			array(),
-			0,
-			0,
-			$aFilters
-		);
-		
-		return count($aGroups) > 0 ? $aGroups[0] : false;
+		return Group::firstWhere([['TenantId', '=', $iTenantId], ['Name', '=', $sGroupName]]);
 	}
-	
+
 	/**
 	 * @param int $iTenantId Tenant identifier.
 	 * @param string $sSearch Search string.
@@ -183,17 +157,9 @@ class Manager extends \Aurora\System\Managers\AbstractManager
 	 */
 	public function getGroupsCount($iTenantId, $sSearch)
 	{
-		$aFilters = [
-			'TenantId' => [$iTenantId, '='],
-			'Name' => ['%' . $sSearch . '%', 'LIKE'],
-		];
-		
-		return $this->oEavManager->getEntitiesCount(
-			\Aurora\Modules\CoreUserGroups\Classes\Group::class,
-			$aFilters
-		);
+		return Group::where([['TenantId', '=', $iTenantId], ['Name', 'LIKE', '%' . $sSearch . '%']])->count();
 	}
-	
+
 	/**
 	 * Obtains all groups for specified tenant.
 	 * Checks if the tenant has a default group. If not, the default is set to the first group.
@@ -205,23 +171,14 @@ class Manager extends \Aurora\System\Managers\AbstractManager
 	 */
 	public function getGroups($iTenantId, $iOffset = 0, $iLimit = 0, $sSearch = '')
 	{
-		$aFilters = [
-			'TenantId' => [$iTenantId, '='],
-			'Name' => ['%' . $sSearch . '%', 'LIKE']
-		];
-		$sOrderBy = '';
-		$iOrderType = \Aurora\System\Enums\SortOrder::ASC;
-		
-		$aGroups = $this->oEavManager->getEntities(
-			\Aurora\Modules\CoreUserGroups\Classes\Group::class,
-			array(),
-			$iOffset,
-			$iLimit,
-			$aFilters,
-			$sOrderBy,
-			$iOrderType
-		);
-		
+		$oQuery = Group::where([['TenantId', '=', $iTenantId], ['Name', 'LIKE', '%' . $sSearch . '%']]);
+		if ($iOffset > 0) {
+			$oQuery = $oQuery->offset($iOffset);
+		}
+		if ($iLimit > 0) {
+			$oQuery = $oQuery->limit($iLimit);
+		}
+		$aGroups = $oQuery->get();
 		if (count($aGroups) && $iTenantId > 0)
 		{
 			// The tenant must have at least one default group
@@ -241,10 +198,10 @@ class Manager extends \Aurora\System\Managers\AbstractManager
 				$oDefaultGroup->save();
 			}
 		}
-		
+
 		return $aGroups;
 	}
-	
+
 	/**
 	 * Removes users from group.
 	 * @param int $iGroupId Group identifier.
@@ -253,20 +210,10 @@ class Manager extends \Aurora\System\Managers\AbstractManager
 	 */
 	public function removeUsersFromGroup($iGroupId, $aUsersIds)
 	{
-		$aAndFilter = [];
-		$aAndFilter[\Aurora\Modules\CoreUserGroups\Module::GetName() . '::GroupId'] = [$iGroupId, '='];
-		$aAndFilter['EntityId'] = [$aUsersIds, 'IN'];
-		$aFilters = [
-			'$AND' => $aAndFilter
-		];
-		$aUsers = $this->oEavManager->getEntities(\Aurora\Modules\Core\Classes\User::class, array(), 0, 0, $aFilters);
-		
-		foreach ($aUsers as $oUser)
-		{
-			$oUser->{\Aurora\Modules\CoreUserGroups\Module::GetName() . '::GroupId'} = 0;
-			$oUser->saveAttribute(\Aurora\Modules\CoreUserGroups\Module::GetName() . '::GroupId');
-		}
-		
+		User::where('Properties->' . Module::GetName() . '::GroupId', $iGroupId)
+			->whereIn('Id', $aUsersIds)
+			->update('Properies->' . Module::GetName() . '::GroupId', 0);
+
 		return true;
 	}
 }
