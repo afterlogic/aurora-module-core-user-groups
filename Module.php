@@ -256,9 +256,9 @@ class Module extends \Aurora\System\Module\AbstractModule
 
 		$oGroup = $this->getGroupsManager()->getGroupByName($TenantId, $GroupName);
 
-		if ($oGroup instanceof Classes\Group)
+		if ($oGroup instanceof Models\Group)
 		{
-			return self::Decorator()->UpdateUserGroup($UserId, $oGroup->EntityId);
+			return self::Decorator()->UpdateUserGroup($UserId, $oGroup->Id);
 		}
 		else
 		{
@@ -316,7 +316,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 		$aGroups = $this->getGroupsManager()->getGroups($iTenantId);
 		foreach ($aGroups as $oGropup)
 		{
-			$this->getGroupsManager()->deleteGroup($oGropup->EntityId);
+			$this->getGroupsManager()->deleteGroup($oGropup->Id);
 		}
 	}
 
@@ -338,7 +338,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 			{
 				$aGroups = \Aurora\Modules\CoreUserGroups\Module::Decorator()->GetGroups($aArgs['TenantId']);
 				$aGroupsIds = array_map(function ($oGroup) {
-					return $oGroup->EntityId;
+					return $oGroup->Id;
 				}, $aGroups['Items']);
 				$aGroupsIds[] = 0;
 				$aArgs['Filters'] = $oFilter->whereNoIn('Properties->CoreUserGroups::GroupId', $aGroupsIds);
