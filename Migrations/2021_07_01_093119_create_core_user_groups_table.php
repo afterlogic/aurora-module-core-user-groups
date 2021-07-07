@@ -18,7 +18,9 @@ class CreateCoreUserGroupsTable extends Migration
             $table->integer('TenantId')->default(0);
             $table->string('Name')->default('');
             $table->boolean('IsDefault')->default(false);
-            $table->timestamps();
+            $table->timestamp(\Aurora\System\Classes\Model::CREATED_AT)->nullable();
+            $table->timestamp(\Aurora\System\Classes\Model::UPDATED_AT)->nullable();
+
         });
     }
 
