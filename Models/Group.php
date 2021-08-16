@@ -26,6 +26,7 @@ class Group extends \Aurora\System\Classes\Model
 	protected $table = 'core_user_groups';
 
 	protected $fillable = [
+		'Id',
 		'TenantId',
 		'Name',
 		'IsDefault'
