@@ -20,7 +20,6 @@ class CreateCoreUserGroupsTable extends Migration
             $table->boolean('IsDefault')->default(false);
             $table->timestamp(\Aurora\System\Classes\Model::CREATED_AT)->nullable();
             $table->timestamp(\Aurora\System\Classes\Model::UPDATED_AT)->nullable();
-
         });
     }
 

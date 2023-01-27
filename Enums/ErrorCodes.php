@@ -14,14 +14,14 @@ namespace Aurora\Modules\CoreUserGroups\Enums;
  */
 class ErrorCodes
 {
-	const GroupAlreadyExists = 1001;
-	const CannotDeleteDefaultGroup = 1002;
+    public const GroupAlreadyExists = 1001;
+    public const CannotDeleteDefaultGroup = 1002;
 
-	/**
-	 * @var array
-	 */
-	protected $aConsts = [
-		'GroupAlreadyExists' => self::GroupAlreadyExists,
-		'CannotDeleteDefaultGroup' => self::CannotDeleteDefaultGroup,
-	];
+    /**
+     * @var array
+     */
+    protected $aConsts = [
+        'GroupAlreadyExists' => self::GroupAlreadyExists,
+        'CannotDeleteDefaultGroup' => self::CannotDeleteDefaultGroup,
+    ];
 }

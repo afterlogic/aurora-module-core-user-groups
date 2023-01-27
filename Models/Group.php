@@ -21,29 +21,29 @@ namespace Aurora\Modules\CoreUserGroups\Models;
  */
 class Group extends \Aurora\System\Classes\Model
 {
-	public $GroupUsers = array();
+    public $GroupUsers = array();
 
-	protected $table = 'core_user_groups';
+    protected $table = 'core_user_groups';
 
-	protected $fillable = [
-		'Id',
-		'TenantId',
-		'Name',
-		'IsDefault'
-	];
+    protected $fillable = [
+        'Id',
+        'TenantId',
+        'Name',
+        'IsDefault'
+    ];
 
-	public function toResponseArray()
-	{
-		$aResponse = parent::toResponseArray();
-		$aResponse['Id'] = $this->Id;
+    public function toResponseArray()
+    {
+        $aResponse = parent::toResponseArray();
+        $aResponse['Id'] = $this->Id;
 
-		$aArgs = ['Group' => $this];
-		\Aurora\System\Api::GetModule('Core')->broadcastEvent(
-			'CoreUserGroups::Group::ToResponseArray',
-			$aArgs,
-			$aResponse
-		);
+        $aArgs = ['Group' => $this];
+        \Aurora\System\Api::GetModule('Core')->broadcastEvent(
+            'CoreUserGroups::Group::ToResponseArray',
+            $aArgs,
+            $aResponse
+        );
 
-		return $aResponse;
-	}
+        return $aResponse;
+    }
 }
