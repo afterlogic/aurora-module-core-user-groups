@@ -220,7 +220,7 @@ class Module extends \Aurora\System\Module\AbstractModule
             throw new \Aurora\System\Exceptions\ApiException(\Aurora\System\Notifications::InvalidInputParameter);
         }
 
-        $oUser = \Aurora\Modules\Core\Module::Decorator()->GetUserUnchecked($UserId);
+        $oUser = \Aurora\Modules\Core\Module::Decorator()->GetUserWithoutRoleCheck($UserId);
         if ($oUser instanceof \Aurora\Modules\Core\Models\User) {
             $oUser->setExtendedProp(self::GetName() . '::GroupId', (int) $GroupId);
             $oUser->save();
