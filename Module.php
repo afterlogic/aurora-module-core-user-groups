@@ -38,6 +38,15 @@ class Module extends \Aurora\System\Module\AbstractModule
         // $this->subscribeEvent('Core::CreateUser::after', array($this, 'onAfterCreateUser'));
     }
 
+    /**
+     *
+     * @return Module
+     */
+    public static function Decorator()
+    {
+        return parent::Decorator();
+    }
+
     public function getGroupsManager()
     {
         if ($this->oApiGroupsManager === null) {
