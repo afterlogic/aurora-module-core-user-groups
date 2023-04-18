@@ -47,6 +47,15 @@ class Module extends \Aurora\System\Module\AbstractModule
         return parent::Decorator();
     }
 
+    /**
+     *
+     * @return Settings
+     */
+    protected function GetModuleSettings()
+    {
+        return $this->oModuleSettings;
+    }
+
     public function getGroupsManager()
     {
         if ($this->oApiGroupsManager === null) {
