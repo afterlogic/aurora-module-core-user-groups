@@ -20,6 +20,8 @@ use Aurora\Modules\CoreUserGroups\Module;
  *
  * @package CoreUserGroups
  * @subpackage Managers
+ *
+ * @property Module $oModule
  */
 class Manager extends \Aurora\System\Managers\AbstractManager
 {
