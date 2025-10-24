@@ -151,6 +151,7 @@ class Manager extends \Aurora\System\Managers\AbstractManager
      */
     public function getGroupsCount($iTenantId, $sSearch)
     {
+        $sSearch = str_replace(['%', '_'], ['\%', '\_'], $sSearch);
         return Group::where([['TenantId', '=', $iTenantId], ['Name', 'LIKE', '%' . $sSearch . '%']])->count();
     }
 
@@ -165,6 +166,7 @@ class Manager extends \Aurora\System\Managers\AbstractManager
      */
     public function getGroups($iTenantId, $iOffset = 0, $iLimit = 0, $sSearch = '')
     {
+        $sSearch = str_replace(['%', '_'], ['\%', '\_'], $sSearch);
         $oQuery = Group::where([['TenantId', '=', $iTenantId], ['Name', 'LIKE', '%' . $sSearch . '%']]);
         if ($iOffset > 0) {
             $oQuery = $oQuery->offset($iOffset);
